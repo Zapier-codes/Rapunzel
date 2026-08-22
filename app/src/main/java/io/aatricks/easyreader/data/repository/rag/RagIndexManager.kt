@@ -106,6 +106,10 @@ class RagIndexManager @Inject constructor(
         return posting.score * idf
     }
 
+    /** Get postings for a token. */
+    fun getPostings(token: String): List<Posting> =
+        invertedIndex[token] ?: emptyList()
+
     /** Check if index has data. */
     fun isIndexed(): Boolean = totalDocs > 0
 }

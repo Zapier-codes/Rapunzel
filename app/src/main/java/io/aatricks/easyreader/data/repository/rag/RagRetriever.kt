@@ -51,7 +51,7 @@ class RagRetriever @Inject constructor(
         val bookIds = mutableMapOf<Long, String>()
 
         queryTokens.forEach { token ->
-            val postings = indexManager.invertedIndex[token] ?: return@forEach
+            val postings = indexManager.getPostings(token)
             postings.forEach { posting ->
                 if (bookId != null && posting.bookId != bookId) return@forEach
                 val tfidf = indexManager.tfidf(token, posting.chapterId)
