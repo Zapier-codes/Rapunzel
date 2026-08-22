@@ -322,6 +322,10 @@ dependencies {
     // of the okhttp family; declaring it explicitly forces it to resolve at the same version so
     // its internals (e.g. RealEventSource) stay binary-compatible with okhttp itself.
     implementation(libs.okhttp.sse)
+    
+    // Retrofit for REST APIs (Wattpad, Inkitt)
+    implementation("com.squareup.retrofit2:retrofit:2.11.0")
+    implementation("com.squareup.retrofit2:converter-kotlinx-serialization:2.11.0")
 
     // Testing
     testImplementation(libs.junit)

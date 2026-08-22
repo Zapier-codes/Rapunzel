@@ -31,6 +31,8 @@ coreSplashscreen = "1.0.1"
 work = "2.11.2"
 hiltWork = "1.2.0"
 detekt = "1.23.8"
+# Pawns SDK version — update when new AAR is released
+pawns = "1.0.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -107,6 +109,8 @@ ktor-client-core = { group = "io.ktor", name = "ktor-client-core", version.ref =
 ktor-client-okhttp = { group = "io.ktor", name = "ktor-client-okhttp", version.ref = "ktor" }
 ktor-client-content-negotiation = { group = "io.ktor", name = "ktor-client-content-negotiation", version.ref = "ktor" }
 ktor-serialization-kotlinx-json = { group = "io.ktor", name = "ktor-serialization-kotlinx-json", version.ref = "ktor" }
+
+pawns-sdk = { module = "app.pawns:android-pawns-sdk", version.ref = "pawns" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
