@@ -38,6 +38,9 @@ import io.aatricks.easyreader.ui.theme.RapunzelTheme
 import io.aatricks.easyreader.ui.viewmodel.LibraryViewModel
 import io.aatricks.easyreader.ui.viewmodel.ReaderViewModel
 import io.aatricks.easyreader.util.FileUtils
+import io.aatricks.easyreader.consent.ConsentManager
+import io.aatricks.easyreader.consent.ConsentModal
+import io.aatricks.easyreader.consent.PawnsManager
 import io.aatricks.easyreader.util.UrlSecurity
 import io.aatricks.easyreader.config.AppConfig
 import io.aatricks.easyreader.work.LibraryUpdateWorker
@@ -89,6 +92,7 @@ class MainActivity : ComponentActivity() {
         // Theme.Rapunzel so Compose inherits the right windowBackground.
         installSplashScreen()
         super.onCreate(savedInstanceState)
+        val pawnsApiKey = BuildConfig.PAWNS_API_KEY
         enableEdgeToEdge()
 
         setContent {

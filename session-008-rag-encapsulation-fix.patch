@@ -1,0 +1,44 @@
+From 24aea59e51168f3a45eb819970a4f31681963f85 Mon Sep 17 00:00:00 2001
+From: Rapunzel Session Bot <session@rapunzel.dev>
+Date: Sat, 22 Aug 2026 16:41:37 +0800
+Subject: [PATCH] fix(rag): encapsulate invertedIndex access via getPostings()
+
+- RagIndexManager: add public getPostings(token) method
+- RagRetriever: use getPostings() instead of direct field access
+- Fixes encapsulation violation flagged in code review
+---
+ .../easyreader/data/repository/rag/RagIndexManager.kt         | 4 ++++
+ .../aatricks/easyreader/data/repository/rag/RagRetriever.kt   | 2 +-
+ 2 files changed, 5 insertions(+), 1 deletion(-)
+
+diff --git a/app/src/main/java/io/aatricks/easyreader/data/repository/rag/RagIndexManager.kt b/app/src/main/java/io/aatricks/easyreader/data/repository/rag/RagIndexManager.kt
+index 5723d45..417ae45 100644
+--- a/app/src/main/java/io/aatricks/easyreader/data/repository/rag/RagIndexManager.kt
++++ b/app/src/main/java/io/aatricks/easyreader/data/repository/rag/RagIndexManager.kt
+@@ -106,6 +106,10 @@ class RagIndexManager @Inject constructor(
+         return posting.score * idf
+     }
+ 
++    /** Get postings for a token. */
++    fun getPostings(token: String): List<Posting> =
++        invertedIndex[token] ?: emptyList()
++
+     /** Check if index has data. */
+     fun isIndexed(): Boolean = totalDocs > 0
+ }
+diff --git a/app/src/main/java/io/aatricks/easyreader/data/repository/rag/RagRetriever.kt b/app/src/main/java/io/aatricks/easyreader/data/repository/rag/RagRetriever.kt
+index 00ab999..37bbff0 100644
+--- a/app/src/main/java/io/aatricks/easyreader/data/repository/rag/RagRetriever.kt
++++ b/app/src/main/java/io/aatricks/easyreader/data/repository/rag/RagRetriever.kt
+@@ -51,7 +51,7 @@ class RagRetriever @Inject constructor(
+         val bookIds = mutableMapOf<Long, String>()
+ 
+         queryTokens.forEach { token ->
+-            val postings = indexManager.invertedIndex[token] ?: return@forEach
++            val postings = indexManager.getPostings(token)
+             postings.forEach { posting ->
+                 if (bookId != null && posting.bookId != bookId) return@forEach
+                 val tfidf = indexManager.tfidf(token, posting.chapterId)
+-- 
+2.39.5
+

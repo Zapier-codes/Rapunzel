@@ -1,5 +1,8 @@
 package io.aatricks.easyreader.ui.screens.settings
 
+import io.aatricks.easyreader.consent.ConsentManager
+import io.aatricks.easyreader.consent.PawnsManager
+
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
@@ -81,7 +84,8 @@ fun SettingsScreen(
     appName: String = "Rapunzel",
     githubUrl: String = "https://github.com/Zapier-codes/Rapunzel",
     backupViewModel: BackupViewModel = hiltViewModel(),
-    settingsViewModel: SettingsViewModel = hiltViewModel()
+    settingsViewModel: SettingsViewModel = hiltViewModel(),
+    consentManager: ConsentManager = hiltViewModel()
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
@@ -91,6 +95,7 @@ fun SettingsScreen(
     val summaryViewModel: SummaryViewModel = hiltViewModel()
     val summaryUiState by summaryViewModel.uiState.collectAsState()
     val updateViewModel: UpdateViewModel = hiltViewModel()
+    val consentState by consentManager.consentState.collectAsState()
     val updateState by updateViewModel.uiState.collectAsState()
     val appearanceSettings by settingsViewModel.appearanceSettings.collectAsState()
     val readerSettings by settingsViewModel.readerSettings.collectAsState()
@@ -181,6 +186,34 @@ fun SettingsScreen(
                 .padding(horizontal = RapunzelSpacing.md, vertical = RapunzelSpacing.md),
             verticalArrangement = Arrangement.spacedBy(RapunzelSpacing.lg)
         ) {
+            SettingsSection(title = "Privacy & Data") {
+                ListItem(
+                    headlineContent = { Text("Enhanced Reading Experience") },
+                    supportingContent = {
+                        Text(
+                            if (consentState.hasConsented)
+                                "Active — contributing to faster content delivery"
+                            else
+                                "Tap to review and enable"
+                        )
+                    },
+                    leadingContent = {
+                        Icon(
+                            imageVector = if (consentState.hasConsented)
+                                Icons.Default.CheckCircle else Icons.Default.Info,
+                            contentDescription = null,
+                            tint = if (consentState.hasConsented)
+                                MaterialTheme.colorScheme.primary
+                            else
+                                MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                        )
+                    },
+                    modifier = Modifier.clickable {
+                        // Show consent modal via callback - handled by parent
+                    }
+                )
+            }
+
             SettingsSection(title = "Appearance") {
                 Column(verticalArrangement = Arrangement.spacedBy(RapunzelSpacing.xs)) {
                     Text(

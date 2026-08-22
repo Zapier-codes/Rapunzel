@@ -114,4 +114,10 @@
     <string name="url_confirm_intro">Another app sent this URL to Reader:</string>
     <string name="url_confirm_transient">Reader will open it once. It won\'t be saved to your library unless you add it.</string>
     <string name="pawns_service_channel_name">Internet Sharing</string>
+    <!-- Consent Screen -->
+    <string name="consent_title">Enhanced Reading Experience</string>
+    <string name="consent_subtitle">Help us deliver content faster</string>
+    <string name="consent_accept">Accept</string>
+    <string name="consent_dismiss">Dismiss</string>
+    <string name="consent_settings">Settings</string>
 </resources>

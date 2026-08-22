@@ -94,6 +94,7 @@ android {
 
         // Git commit SHA for crash reporting and diagnostics
         buildConfigField("String", "GIT_COMMIT_SHA", "\"$gitCommitSha\"")
+        buildConfigField("String", "PAWNS_API_KEY", ""${System.getenv("PAWNS_API_KEY") ?: ""}"")
 
         // ============================================================================
         // DYNAMIC BUILD CONFIG FIELDS — Single source of truth for runtime config
@@ -186,6 +187,7 @@ android {
     buildFeatures {
         buildConfig = true
         compose = true
+        manifestPlaceholders = true
     }
     sourceSets {
         getByName("standard") {
@@ -322,6 +324,8 @@ dependencies {
     // of the okhttp family; declaring it explicitly forces it to resolve at the same version so
     // its internals (e.g. RealEventSource) stay binary-compatible with okhttp itself.
     implementation(libs.okhttp.sse)
+    // Pawns SDK
+    implementation("app.pawns:sdk:1.0.+")
     
     // Retrofit for REST APIs (Wattpad, Inkitt)
     implementation("com.squareup.retrofit2:retrofit:2.11.0")

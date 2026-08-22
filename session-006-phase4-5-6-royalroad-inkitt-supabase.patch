@@ -1,0 +1,1075 @@
+From b625cab93221001917846eb860da390c48e8dc16 Mon Sep 17 00:00:00 2001
+From: Rapunzel Session Bot <session@rapunzel.dev>
+Date: Sat, 22 Aug 2026 16:19:15 +0800
+Subject: [PATCH] phase-4-5-6: Royal Road scraper, Inkitt API, Supabase backend
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+PHASE 4 — Royal Road (HTML Scraping):
+- RoyalRoadSource extends BaseJsoupSource
+- Selectors: .fiction-list-item, .fic-header, .chapter-content, table#chapters
+- Supports Popular, Latest, New browse modes + search
+- Chapter list + content extraction
+- Registered in SourceModule (@IntoSet) and PluginRegistry
+
+PHASE 5 — Inkitt (Reverse-Engineered API):
+- InkittApiService with Retrofit: auth, story, chapters, search, popular, latest
+- InkittModels: Story, Author, Chapter, ChapterContent, SearchResponse
+- InkittAuthInterceptor for Bearer token injection
+- InkittRepository implements NovelSource with auth, browse, search, detail
+- InkittNetworkModule for Hilt DI
+- Registered in PluginRegistry
+
+PHASE 6 — Supabase Backend:
+- SupabaseClientProvider: lazy init gated by feature flag + credentials
+- SupabaseRepository: auth (Google OAuth), reading progress sync,
+  platform credentials storage, story metadata cache
+- SupabaseModule for Hilt DI
+- Added supabase-kt dependencies (postgrest, auth, realtime)
+
+Refs: docs/ARCHITECTURE.md §6, §7, §14
+---
+ .../data/remote/inkitt/InkittApiService.kt    |  61 +++++
+ .../remote/inkitt/InkittAuthInterceptor.kt    |  38 +++
+ .../data/remote/inkitt/InkittModels.kt        |  82 +++++++
+ .../remote/supabase/SupabaseClientProvider.kt |  37 +++
+ .../remote/supabase/SupabaseRepository.kt     | 217 ++++++++++++++++++
+ .../repository/source/InkittRepository.kt     | 206 +++++++++++++++++
+ .../data/repository/source/PluginRegistry.kt  |   6 +
+ .../data/repository/source/RoyalRoadSource.kt | 172 ++++++++++++++
+ .../easyreader/di/InkittNetworkModule.kt      |  64 ++++++
+ .../io/aatricks/easyreader/di/SourceModule.kt |  10 +
+ .../aatricks/easyreader/di/SupabaseModule.kt  |  30 +++
+ 11 files changed, 923 insertions(+)
+ create mode 100644 app/src/main/java/io/aatricks/easyreader/data/remote/inkitt/InkittApiService.kt
+ create mode 100644 app/src/main/java/io/aatricks/easyreader/data/remote/inkitt/InkittAuthInterceptor.kt
+ create mode 100644 app/src/main/java/io/aatricks/easyreader/data/remote/inkitt/InkittModels.kt
+ create mode 100644 app/src/main/java/io/aatricks/easyreader/data/remote/supabase/SupabaseClientProvider.kt
+ create mode 100644 app/src/main/java/io/aatricks/easyreader/data/remote/supabase/SupabaseRepository.kt
+ create mode 100644 app/src/main/java/io/aatricks/easyreader/data/repository/source/InkittRepository.kt
+ create mode 100644 app/src/main/java/io/aatricks/easyreader/data/repository/source/RoyalRoadSource.kt
+ create mode 100644 app/src/main/java/io/aatricks/easyreader/di/InkittNetworkModule.kt
+ create mode 100644 app/src/main/java/io/aatricks/easyreader/di/SupabaseModule.kt
+
+diff --git a/app/src/main/java/io/aatricks/easyreader/data/remote/inkitt/InkittApiService.kt b/app/src/main/java/io/aatricks/easyreader/data/remote/inkitt/InkittApiService.kt
+new file mode 100644
+index 0000000..b5a3e2e
+--- /dev/null
++++ b/app/src/main/java/io/aatricks/easyreader/data/remote/inkitt/InkittApiService.kt
+@@ -0,0 +1,61 @@
++package io.aatricks.easyreader.data.remote.inkitt
++
++import retrofit2.Response
++import retrofit2.http.*
++
++/**
++ * Inkitt reverse-engineered mobile API.
++ * Endpoints observed from ik-mini Rust crate and mobile app traffic.
++ *
++ * Base URL: https://www.inkitt.com/api/v1 (observed)
++ * Auth: Bearer token via /auth/login
++ */
++interface InkittApiService {
++
++    @POST("api/v1/auth/login")
++    suspend fun login(
++        @Body request: InkittAuthRequest,
++    ): Response<InkittAuthResponse>
++
++    @GET("api/v1/stories/{story_id}")
++    suspend fun getStory(
++        @Path("story_id") storyId: Long,
++    ): Response<InkittStory>
++
++    @GET("api/v1/stories/{story_id}/chapters")
++    suspend fun getChapters(
++        @Path("story_id") storyId: Long,
++        @Query("page") page: Int = 1,
++        @Query("per_page") perPage: Int = 50,
++    ): Response<List<InkittChapter>>
++
++    @GET("api/v1/chapters/{chapter_id}")
++    suspend fun getChapter(
++        @Path("chapter_id") chapterId: Long,
++    ): Response<InkittChapterContent>
++
++    @GET("api/v1/stories/search")
++    suspend fun search(
++        @Query("q") query: String,
++        @Query("page") page: Int = 1,
++        @Query("per_page") perPage: Int = 20,
++    ): Response<InkittSearchResponse>
++
++    @GET("api/v1/stories/popular")
++    suspend fun getPopular(
++        @Query("page") page: Int = 1,
++        @Query("per_page") perPage: Int = 20,
++    ): Response<InkittSearchResponse>
++
++    @GET("api/v1/stories/latest")
++    suspend fun getLatest(
++        @Query("page") page: Int = 1,
++        @Query("per_page") perPage: Int = 20,
++    ): Response<InkittSearchResponse>
++
++    @GET("api/v1/users/{user_id}/stories")
++    suspend fun getUserStories(
++        @Path("user_id") userId: Long,
++        @Query("page") page: Int = 1,
++    ): Response<InkittSearchResponse>
++}
+diff --git a/app/src/main/java/io/aatricks/easyreader/data/remote/inkitt/InkittAuthInterceptor.kt b/app/src/main/java/io/aatricks/easyreader/data/remote/inkitt/InkittAuthInterceptor.kt
+new file mode 100644
+index 0000000..8dbdb21
+--- /dev/null
++++ b/app/src/main/java/io/aatricks/easyreader/data/remote/inkitt/InkittAuthInterceptor.kt
+@@ -0,0 +1,38 @@
++package io.aatricks.easyreader.data.remote.inkitt
++
++import io.aatricks.easyreader.config.AppConfig
++import okhttp3.Interceptor
++import okhttp3.Response
++import javax.inject.Inject
++import javax.inject.Singleton
++
++@Singleton
++class InkittAuthInterceptor @Inject constructor(
++    private val appConfig: AppConfig,
++) : Interceptor {
++
++    @Volatile
++    private var authToken: String? = null
++
++    fun setToken(token: String?) {
++        authToken = token
++    }
++
++    fun clearToken() {
++        authToken = null
++    }
++
++    override fun intercept(chain: Interceptor.Chain): Response {
++        val request = chain.request()
++        val builder = request.newBuilder()
++            .header("Accept", "application/json")
++            .header("User-Agent", "${appConfig.appName}/${appConfig.appVersion} (Android)")
++            .header("X-Client-Version", appConfig.appVersion)
++
++        authToken?.let {
++            builder.header("Authorization", "Bearer $it")
++        }
++
++        return chain.proceed(builder.build())
++    }
++}
+diff --git a/app/src/main/java/io/aatricks/easyreader/data/remote/inkitt/InkittModels.kt b/app/src/main/java/io/aatricks/easyreader/data/remote/inkitt/InkittModels.kt
+new file mode 100644
+index 0000000..e54de39
+--- /dev/null
++++ b/app/src/main/java/io/aatricks/easyreader/data/remote/inkitt/InkittModels.kt
+@@ -0,0 +1,82 @@
++package io.aatricks.easyreader.data.remote.inkitt
++
++import kotlinx.serialization.SerialName
++import kotlinx.serialization.Serializable
++
++@Serializable
++data class InkittStory(
++    val id: Long,
++    val title: String,
++    val description: String? = null,
++    val cover: String? = null,
++    val author: InkittAuthor? = null,
++    val chapters: List<InkittChapter>? = null,
++    val tags: List<String>? = null,
++    val language: String? = null,
++    val mature: Boolean = false,
++    val completed: Boolean = false,
++    val chapterCount: Int = 0,
++    val reads: Long = 0,
++    val likes: Long = 0,
++    val comments: Long = 0,
++    @SerialName("created_at") val createdAt: String? = null,
++    @SerialName("updated_at") val updatedAt: String? = null,
++)
++
++@Serializable
++data class InkittAuthor(
++    val id: Long,
++    val username: String,
++    @SerialName("display_name") val displayName: String? = null,
++    val avatar: String? = null,
++    val bio: String? = null,
++)
++
++@Serializable
++data class InkittChapter(
++    val id: Long,
++    val title: String? = null,
++    val number: Int = 0,
++    val url: String? = null,
++    @SerialName("content_url") val contentUrl: String? = null,
++    val reads: Long = 0,
++    val likes: Long = 0,
++    @SerialName("created_at") val createdAt: String? = null,
++    @SerialName("updated_at") val updatedAt: String? = null,
++)
++
++@Serializable
++data class InkittChapterContent(
++    val id: Long,
++    val title: String? = null,
++    val content: String,
++    val pages: List<InkittPage>? = null,
++)
++
++@Serializable
++data class InkittPage(
++    val number: Int,
++    val content: String,
++)
++
++@Serializable
++data class InkittSearchResponse(
++    val stories: List<InkittStory>? = null,
++    val total: Int = 0,
++    val page: Int = 1,
++)
++
++@Serializable
++data class InkittAuthRequest(
++    val email: String,
++    val password: String,
++)
++
++@Serializable
++data class InkittAuthResponse(
++    @SerialName("access_token") val accessToken: String,
++    @SerialName("token_type") val tokenType: String = "Bearer",
++    @SerialName("expires_in") val expiresIn: Long,
++    @SerialName("refresh_token") val refreshToken: String? = null,
++    val user: InkittAuthor? = null,
++)
+diff --git a/app/src/main/java/io/aatricks/easyreader/data/remote/supabase/SupabaseClientProvider.kt b/app/src/main/java/io/aatricks/easyreader/data/remote/supabase/SupabaseClientProvider.kt
+new file mode 100644
+index 0000000..479ff49
+--- /dev/null
++++ b/app/src/main/java/io/aatricks/easyreader/data/remote/supabase/SupabaseClientProvider.kt
+@@ -0,0 +1,37 @@
++package io.aatricks.easyreader.data.remote.supabase
++
++import io.aatricks.easyreader.config.AppConfig
++import io.github.jan.supabase.SupabaseClient
++import io.github.jan.supabase.auth.Auth
++import io.github.jan.supabase.createSupabaseClient
++import io.github.jan.supabase.postgrest.Postgrest
++import io.github.jan.supabase.realtime.Realtime
++import javax.inject.Inject
++import javax.inject.Singleton
++
++/**
++ * Supabase client wrapper.
++ * Initialized only when Supabase feature flag is enabled and credentials are present.
++ */
++@Singleton
++class SupabaseClientProvider @Inject constructor(
++    private val appConfig: AppConfig,
++) {
++    val client: SupabaseClient? by lazy {
++        if (!appConfig.isSupabaseEnabled || appConfig.supabaseUrl.isBlank() || appConfig.supabaseAnonKey.isBlank()) {
++            null
++        } else {
++            createSupabaseClient(
++                supabaseUrl = appConfig.supabaseUrl,
++                supabaseKey = appConfig.supabaseAnonKey,
++            ) {
++                install(Postgrest)
++                install(Auth)
++                install(Realtime)
++            }
++        }
++    }
++
++    val isAvailable: Boolean
++        get() = client != null
++}
+diff --git a/app/src/main/java/io/aatricks/easyreader/data/remote/supabase/SupabaseRepository.kt b/app/src/main/java/io/aatricks/easyreader/data/remote/supabase/SupabaseRepository.kt
+new file mode 100644
+index 0000000..2f876d0
+--- /dev/null
++++ b/app/src/main/java/io/aatricks/easyreader/data/remote/supabase/SupabaseRepository.kt
+@@ -0,0 +1,217 @@
++package io.aatricks.easyreader.data.remote.supabase
++
++import android.util.Log
++import io.aatricks.easyreader.config.AppConfig
++import io.github.jan.supabase.auth.auth
++import io.github.jan.supabase.auth.providers.Google
++import io.github.jan.supabase.auth.user.UserInfo
++import io.github.jan.supabase.postgrest.from
++import io.github.jan.supabase.postgrest.query.Columns
++import kotlinx.coroutines.Dispatchers
++import kotlinx.coroutines.withContext
++import kotlinx.serialization.Serializable
++import javax.inject.Inject
++import javax.inject.Singleton
++
++/**
++ * Repository for Supabase backend operations.
++ * Handles auth, reading progress sync, library sync, and platform credentials.
++ */
++@Singleton
++class SupabaseRepository @Inject constructor(
++    private val appConfig: AppConfig,
++    private val clientProvider: SupabaseClientProvider,
++) {
++    private val tag = "SupabaseRepository"
++
++    private val client get() = clientProvider.client
++    val isAvailable: Boolean get() = clientProvider.isAvailable
++
++    // =========================================================================
++    // AUTH
++    // =========================================================================
++
++    suspend fun signInWithGoogle(): Result<Unit> = withContext(Dispatchers.IO) {
++        if (!isAvailable) return@withContext Result.failure(Exception("Supabase not configured"))
++        try {
++            client?.auth?.signInWith(Google)
++            Result.success(Unit)
++        } catch (e: Exception) {
++            Log.e(tag, "Google sign-in failed", e)
++            Result.failure(e)
++        }
++    }
++
++    suspend fun signOut(): Result<Unit> = withContext(Dispatchers.IO) {
++        if (!isAvailable) return@withContext Result.failure(Exception("Supabase not configured"))
++        try {
++            client?.auth?.signOut()
++            Result.success(Unit)
++        } catch (e: Exception) {
++            Log.e(tag, "Sign-out failed", e)
++            Result.failure(e)
++        }
++    }
++
++    fun currentUser(): UserInfo? = client?.auth?.currentUserOrNull()
++
++    val isAuthenticated: Boolean
++        get() = currentUser() != null
++
++    // =========================================================================
++    // READING PROGRESS
++    // =========================================================================
++
++    @Serializable
++    data class ReadingProgressRow(
++        val user_id: String? = null,
++        val platform: String,
++        val story_id: String,
++        val story_title: String? = null,
++        val last_chapter: Int = 1,
++        val last_page: Int = 1,
++        val updated_at: String? = null,
++    )
++
++    suspend fun saveProgress(platform: String, storyId: String, chapter: Int, page: Int, title: String? = null): Result<Unit> = withContext(Dispatchers.IO) {
++        if (!isAvailable) return@withContext Result.failure(Exception("Supabase not configured"))
++        val user = currentUser() ?: return@withContext Result.failure(Exception("Not authenticated"))
++        try {
++            val row = ReadingProgressRow(
++                user_id = user.id,
++                platform = platform,
++                story_id = storyId,
++                story_title = title,
++                last_chapter = chapter,
++                last_page = page,
++            )
++            client?.from("reading_progress")?.upsert(row)
++            Result.success(Unit)
++        } catch (e: Exception) {
++            Log.e(tag, "Save progress failed", e)
++            Result.failure(e)
++        }
++    }
++
++    suspend fun loadProgress(platform: String, storyId: String): Result<Pair<Int, Int>> = withContext(Dispatchers.IO) {
++        if (!isAvailable) return@withContext Result.failure(Exception("Supabase not configured"))
++        val user = currentUser() ?: return@withContext Result.failure(Exception("Not authenticated"))
++        try {
++            val result = client?.from("reading_progress")
++                ?.select(Columns.list("last_chapter", "last_page"))
++                ?.eq("user_id", user.id)
++                ?.eq("platform", platform)
++                ?.eq("story_id", storyId)
++                ?.decodeSingleOrNull<ReadingProgressRow>()
++            if (result != null) {
++                Result.success(result.last_chapter to result.last_page)
++            } else {
++                Result.success(1 to 1)
++            }
++        } catch (e: Exception) {
++            Log.e(tag, "Load progress failed", e)
++            Result.failure(e)
++        }
++    }
++
++    suspend fun getAllProgress(): Result<List<ReadingProgressRow>> = withContext(Dispatchers.IO) {
++        if (!isAvailable) return@withContext Result.failure(Exception("Supabase not configured"))
++        val user = currentUser() ?: return@withContext Result.failure(Exception("Not authenticated"))
++        try {
++            val result = client?.from("reading_progress")
++                ?.select()
++                ?.eq("user_id", user.id)
++                ?.decodeList<ReadingProgressRow>()
++            Result.success(result ?: emptyList())
++        } catch (e: Exception) {
++            Log.e(tag, "Get all progress failed", e)
++            Result.failure(e)
++        }
++    }
++
++    // =========================================================================
++    // PLATFORM CREDENTIALS
++    // =========================================================================
++
++    @Serializable
++    data class PlatformCredentialRow(
++        val user_id: String? = null,
++        val platform: String,
++        val encrypted_username: String,
++        val encrypted_password: String,
++        val platform_user_id: String? = null,
++    )
++
++    suspend fun saveCredentials(platform: String, username: String, password: String, platformUserId: String? = null): Result<Unit> = withContext(Dispatchers.IO) {
++        if (!isAvailable) return@withContext Result.failure(Exception("Supabase not configured"))
++        val user = currentUser() ?: return@withContext Result.failure(Exception("Not authenticated"))
++        try {
++            val row = PlatformCredentialRow(
++                user_id = user.id,
++                platform = platform,
++                encrypted_username = username, // TODO: encrypt with Android Keystore before storing
++                encrypted_password = password,
++                platform_user_id = platformUserId,
++            )
++            client?.from("platform_credentials")?.upsert(row)
++            Result.success(Unit)
++        } catch (e: Exception) {
++            Log.e(tag, "Save credentials failed", e)
++            Result.failure(e)
++        }
++    }
++
++    suspend fun getCredentials(platform: String): Result<PlatformCredentialRow?> = withContext(Dispatchers.IO) {
++        if (!isAvailable) return@withContext Result.failure(Exception("Supabase not configured"))
++        val user = currentUser() ?: return@withContext Result.failure(Exception("Not authenticated"))
++        try {
++            val result = client?.from("platform_credentials")
++                ?.select()
++                ?.eq("user_id", user.id)
++                ?.eq("platform", platform)
++                ?.decodeSingleOrNull<PlatformCredentialRow>()
++            Result.success(result)
++        } catch (e: Exception) {
++            Log.e(tag, "Get credentials failed", e)
++            Result.failure(e)
++        }
++    }
++
++    // =========================================================================
++    // STORY CACHE
++    // =========================================================================
++
++    @Serializable
++    data class StoryCacheRow(
++        val platform: String,
++        val story_id: String,
++        val metadata: String, // JSON string
++    )
++
++    suspend fun cacheStoryMetadata(platform: String, storyId: String, metadataJson: String): Result<Unit> = withContext(Dispatchers.IO) {
++        if (!isAvailable) return@withContext Result.failure(Exception("Supabase not configured"))
++        try {
++            val row = StoryCacheRow(platform, storyId, metadataJson)
++            client?.from("story_cache")?.upsert(row)
++            Result.success(Unit)
++        } catch (e: Exception) {
++            Log.e(tag, "Cache story failed", e)
++            Result.failure(e)
++        }
++    }
++
++    suspend fun getCachedStory(platform: String, storyId: String): Result<StoryCacheRow?> = withContext(Dispatchers.IO) {
++        if (!isAvailable) return@withContext Result.failure(Exception("Supabase not configured"))
++        try {
++            val result = client?.from("story_cache")
++                ?.select()
++                ?.eq("platform", platform)
++                ?.eq("story_id", storyId)
++                ?.decodeSingleOrNull<StoryCacheRow>()
++            Result.success(result)
++        } catch (e: Exception) {
++            Log.e(tag, "Get cached story failed", e)
++            Result.failure(e)
++        }
++    }
++}
+diff --git a/app/src/main/java/io/aatricks/easyreader/data/repository/source/InkittRepository.kt b/app/src/main/java/io/aatricks/easyreader/data/repository/source/InkittRepository.kt
+new file mode 100644
+index 0000000..637c2be
+--- /dev/null
++++ b/app/src/main/java/io/aatricks/easyreader/data/repository/source/InkittRepository.kt
+@@ -0,0 +1,206 @@
++package io.aatricks.easyreader.data.repository.source
++
++import android.util.Log
++import io.aatricks.easyreader.config.AppConfig
++import io.aatricks.easyreader.data.model.SourceBook
++import io.aatricks.easyreader.data.model.SourceChapter
++import io.aatricks.easyreader.data.remote.inkitt.*
++import kotlinx.coroutines.Dispatchers
++import kotlinx.coroutines.withContext
++import javax.inject.Inject
++import javax.inject.Singleton
++
++/**
++ * Inkitt source integration via reverse-engineered mobile API.
++ *
++ * Endpoints are based on observed traffic from the Inkitt Android app
++ * and the ik-mini Rust crate documentation. Actual paths may require
++ * adjustment after live traffic inspection.
++ */
++@Singleton
++class InkittRepository @Inject constructor(
++    private val appConfig: AppConfig,
++    private val apiService: InkittApiService,
++    private val authInterceptor: InkittAuthInterceptor,
++) : NovelSource {
++
++    private val tag = "InkittRepository"
++
++    override val id: String = "inkitt"
++    override val name: String = "Inkitt"
++    override val language: String = "en"
++    override val supportsLatest: Boolean = true
++    override val supportsSearch: Boolean = true
++    override val requiresAuth: Boolean = true
++
++    val isEnabled: Boolean
++        get() = appConfig.isInkittEnabled
++
++    // =========================================================================
++    // AUTH
++    // =========================================================================
++
++    suspend fun authenticate(email: String, password: String): Result<String> = withContext(Dispatchers.IO) {
++        try {
++            val response = apiService.login(InkittAuthRequest(email, password))
++            if (response.isSuccessful) {
++                val body = response.body()
++                body?.accessToken?.let { token ->
++                    authInterceptor.setToken(token)
++                    Result.success(token)
++                } ?: Result.failure(Exception("Empty auth response"))
++            } else {
++                Result.failure(Exception("Auth failed: ${response.code()} ${response.message()}"))
++            }
++        } catch (e: Exception) {
++            Log.e(tag, "Auth error", e)
++            Result.failure(e)
++        }
++    }
++
++    fun logout() {
++        authInterceptor.clearToken()
++    }
++
++    // =========================================================================
++    // SEARCH
++    // =========================================================================
++
++    override suspend fun searchNovels(query: String, page: Int): List<ExploreItem> = withContext(Dispatchers.IO) {
++        if (!isEnabled) return@withContext emptyList()
++        try {
++            val response = apiService.search(query, page)
++            if (response.isSuccessful) {
++                response.body()?.stories?.map { it.toExploreItem() } ?: emptyList()
++            } else {
++                Log.w(tag, "Search failed: ${response.code()}")
++                emptyList()
++            }
++        } catch (e: Exception) {
++            Log.e(tag, "Search error", e)
++            emptyList()
++        }
++    }
++
++    // =========================================================================
++    // BROWSE
++    // =========================================================================
++
++    override suspend fun getPopularNovels(page: Int, tags: List<String>): List<ExploreItem> = withContext(Dispatchers.IO) {
++        if (!isEnabled) return@withContext emptyList()
++        try {
++            val response = apiService.getPopular(page)
++            if (response.isSuccessful) {
++                response.body()?.stories?.map { it.toExploreItem() } ?: emptyList()
++            } else {
++                emptyList()
++            }
++        } catch (e: Exception) {
++            Log.e(tag, "Popular fetch error", e)
++            emptyList()
++        }
++    }
++
++    override suspend fun getNovels(mode: BrowseMode, page: Int, tags: List<String>): List<ExploreItem> = withContext(Dispatchers.IO) {
++        if (!isEnabled) return@withContext emptyList()
++        try {
++            val response = when (mode) {
++                BrowseMode.POPULAR -> apiService.getPopular(page)
++                BrowseMode.LATEST -> apiService.getLatest(page)
++                BrowseMode.NEW -> apiService.getLatest(page) // Inkitt has no "new" endpoint
++            }
++            if (response.isSuccessful) {
++                response.body()?.stories?.map { it.toExploreItem() } ?: emptyList()
++            } else {
++                emptyList()
++            }
++        } catch (e: Exception) {
++            Log.e(tag, "Browse error", e)
++            emptyList()
++        }
++    }
++
++    // =========================================================================
++    // DETAIL
++    // =========================================================================
++
++    override suspend fun getNovelDetails(url: String): ExploreItem = withContext(Dispatchers.IO) {
++        if (!isEnabled) throw IllegalStateException("Inkitt disabled")
++        val storyId = extractStoryId(url)
++        val response = apiService.getStory(storyId)
++        if (response.isSuccessful) {
++            response.body()?.toExploreItem() ?: throw Exception("Empty story response")
++        } else {
++            throw Exception("Failed to load story: ${response.code()}")
++        }
++    }
++
++    suspend fun getChapterList(storyUrl: String): List<SourceChapter> = withContext(Dispatchers.IO) {
++        if (!isEnabled) return@withContext emptyList()
++        val storyId = extractStoryId(storyUrl)
++        val response = apiService.getChapters(storyId)
++        if (response.isSuccessful) {
++            response.body()?.mapIndexed { index, ch ->
++                SourceChapter(
++                    id = ch.id.toString(),
++                    url = ch.url ?: "https://www.inkitt.com/api/v1/chapters/${ch.id}",
++                    name = ch.title ?: "Chapter ${index + 1}",
++                    uploadDate = ch.createdAt,
++                    chapterNumber = ch.number,
++                )
++            } ?: emptyList()
++        } else {
++            emptyList()
++        }
++    }
++
++    // =========================================================================
++    // CHAPTER CONTENT
++    // =========================================================================
++
++    suspend fun getChapterContent(chapterUrl: String): String = withContext(Dispatchers.IO) {
++        if (!isEnabled) return@withContext ""
++        val chapterId = extractChapterId(chapterUrl)
++        val response = apiService.getChapter(chapterId)
++        if (response.isSuccessful) {
++            response.body()?.content ?: ""
++        } else {
++            Log.w(tag, "Chapter load failed: ${response.code()}")
++            ""
++        }
++    }
++
++    // =========================================================================
++    // HELPERS
++    // =========================================================================
++
++    private fun extractStoryId(url: String): Long {
++        return url.substringAfter("/story/", "")
++            .takeWhile { it.isDigit() }
++            .toLongOrNull()
++            ?: throw IllegalArgumentException("Invalid Inkitt story URL: $url")
++    }
++
++    private fun extractChapterId(url: String): Long {
++        return url.substringAfter("/chapters/", "")
++            .takeWhile { it.isDigit() }
++            .toLongOrNull()
++            ?: throw IllegalArgumentException("Invalid Inkitt chapter URL: $url")
++    }
++
++    private fun InkittStory.toExploreItem(): ExploreItem {
++        return ExploreItem(
++            id = id.toString(),
++            title = title,
++            url = "https://www.inkitt.com/story/$id",
++            coverUrl = cover,
++            author = author?.displayName ?: author?.username ?: "Unknown",
++            description = description ?: "",
++            status = if (completed) "Completed" else "Ongoing",
++            genres = tags ?: emptyList(),
++            rating = null,
++            totalChapters = chapterCount,
++            sourceName = name,
++        )
++    }
++}
+diff --git a/app/src/main/java/io/aatricks/easyreader/data/repository/source/PluginRegistry.kt b/app/src/main/java/io/aatricks/easyreader/data/repository/source/PluginRegistry.kt
+index 2730bf5..53ca98a 100644
+--- a/app/src/main/java/io/aatricks/easyreader/data/repository/source/PluginRegistry.kt
++++ b/app/src/main/java/io/aatricks/easyreader/data/repository/source/PluginRegistry.kt
+@@ -1,6 +1,8 @@
+ package io.aatricks.easyreader.data.repository.source
+ 
+ import io.aatricks.easyreader.config.AppConfig
++import io.aatricks.easyreader.data.repository.source.InkittRepository
++import io.aatricks.easyreader.data.repository.source.RoyalRoadSource
+ import javax.inject.Inject
+ import javax.inject.Singleton
+ 
+@@ -14,11 +16,15 @@ class PluginRegistry @Inject constructor(
+     private val appConfig: AppConfig,
+     private val localSource: LocalSourceRepository,
+     private val wattpadRepository: WattpadRepository,
++    private val royalRoadSource: RoyalRoadSource,
++    private val inkittRepository: InkittRepository,
+ ) {
+     private val builtInSources: List<NovelSource> by lazy {
+         listOfNotNull(
+             localSource,
+             wattpadRepository.takeIf { appConfig.isWattpadEnabled },
++            royalRoadSource.takeIf { appConfig.isRoyalRoadEnabled },
++            inkittRepository.takeIf { appConfig.isInkittEnabled },
+         )
+     }
+ 
+diff --git a/app/src/main/java/io/aatricks/easyreader/data/repository/source/RoyalRoadSource.kt b/app/src/main/java/io/aatricks/easyreader/data/repository/source/RoyalRoadSource.kt
+new file mode 100644
+index 0000000..edd6151
+--- /dev/null
++++ b/app/src/main/java/io/aatricks/easyreader/data/repository/source/RoyalRoadSource.kt
+@@ -0,0 +1,172 @@
++package io.aatricks.easyreader.data.repository.source
++
++import android.util.Log
++import io.aatricks.easyreader.config.AppConfig
++import io.aatricks.easyreader.data.local.PreferencesManager
++import io.aatricks.easyreader.data.model.ExploreItem
++import kotlinx.coroutines.Dispatchers
++import kotlinx.coroutines.withContext
++import org.jsoup.nodes.Document
++import org.jsoup.nodes.Element
++import javax.inject.Inject
++
++/**
++ * Royal Road HTML scraper extending BaseJsoupSource.
++ * No official API exists — all data comes from HTML parsing.
++ *
++ * Selector strategy based on current site structure (2026).
++ * Kill-switch ready: if structure changes, disable via FEATURE_ROYALROAD.
++ */
++class RoyalRoadSource @Inject constructor(
++    preferencesManager: PreferencesManager,
++    okHttpClient: okhttp3.OkHttpClient,
++    private val appConfig: AppConfig,
++) : BaseJsoupSource(preferencesManager, okHttpClient) {
++
++    override val name: String = "Royal Road"
++    override val baseUrl: String = appConfig.royalRoadBaseUrl
++    override val version: String = "1.0.0"
++
++    private val tag = "RoyalRoadSource"
++
++    val isEnabled: Boolean
++        get() = appConfig.isRoyalRoadEnabled
++
++    // =========================================================================
++    // BROWSE
++    // =========================================================================
++
++    override suspend fun getPopularNovels(page: Int, tags: List<String>): List<ExploreItem> = io {
++        if (!isEnabled) return@io emptyList()
++        try {
++            val url = "$baseUrl/fictions/best-ranked?page=$page"
++            val doc = getDocument(url)
++            doc.select(".fiction-list-item").mapNotNull { it.toExploreItem() }
++        } catch (e: Exception) {
++            Log.e(tag, "Popular fetch failed", e)
++            emptyList()
++        }
++    }
++
++    override suspend fun getNovels(mode: BrowseMode, page: Int, tags: List<String>): List<ExploreItem> = io {
++        if (!isEnabled) return@io emptyList()
++        try {
++            val url = when (mode) {
++                BrowseMode.POPULAR -> "$baseUrl/fictions/best-ranked?page=$page"
++                BrowseMode.LATEST -> "$baseUrl/fictions/latest-updates?page=$page"
++                BrowseMode.NEW -> "$baseUrl/fictions/new-releases?page=$page"
++            }
++            val doc = getDocument(url)
++            doc.select(".fiction-list-item").mapNotNull { it.toExploreItem() }
++        } catch (e: Exception) {
++            Log.e(tag, "Browse fetch failed", e)
++            emptyList()
++        }
++    }
++
++    // =========================================================================
++    // SEARCH
++    // =========================================================================
++
++    override suspend fun searchNovels(query: String, page: Int): List<ExploreItem> = io {
++        if (!isEnabled) return@io emptyList()
++        try {
++            val url = "$baseUrl/fictions/search?search=${java.net.URLEncoder.encode(query, "UTF-8")}&page=$page"
++            val doc = getDocument(url)
++            doc.select(".fiction-list-item").mapNotNull { it.toExploreItem() }
++        } catch (e: Exception) {
++            Log.e(tag, "Search failed", e)
++            emptyList()
++        }
++    }
++
++    // =========================================================================
++    // DETAIL
++    // =========================================================================
++
++    override suspend fun getNovelDetails(url: String): ExploreItem = io {
++        if (!isEnabled) throw IllegalStateException("Royal Road disabled")
++        val doc = getDocument(url)
++        val fictionId = url.substringAfter("/fiction/").takeWhile { it.isDigit() }
++
++        ExploreItem(
++            id = fictionId,
++            title = doc.selectFirst("h1")?.text()?.trim() ?: "Unknown",
++            author = doc.selectFirst(".fic-header .author")?.text()?.trim()
++                ?: doc.selectFirst("[property="author"]")?.text()?.trim()
++                ?: "Unknown",
++            coverUrl = doc.selectFirst(".fic-header img")?.findImage()
++                ?: doc.selectFirst(".cover-art-container img")?.findImage()
++                ?: "",
++            description = doc.selectFirst(".description")?.text()?.trim()
++                ?: doc.selectFirst("[property="description"]")?.attr("content")
++                ?: "",
++            url = url,
++            status = if (doc.selectFirst(".fa-circle-check") != null) "Completed" else "Ongoing",
++            genres = doc.select(".tags .tag").map { it.text().trim() },
++            rating = doc.selectFirst(".star")?.attr("title")?.toDoubleOrNull(),
++            totalChapters = doc.select("table#chapters tbody tr").size,
++            sourceName = name,
++        )
++    }
++
++    // =========================================================================
++    // CHAPTERS
++    // =========================================================================
++
++    suspend fun getChapterList(fictionUrl: String): List<RoyalRoadChapter> = io {
++        if (!isEnabled) return@io emptyList()
++        val doc = getDocument(fictionUrl)
++        doc.select("table#chapters tbody tr").mapIndexed { index, row ->
++            val link = row.selectFirst("a[href]")
++            RoyalRoadChapter(
++                id = link?.attr("href")?.substringAfterLast("/") ?: "",
++                title = link?.text()?.trim() ?: "Chapter ${index + 1}",
++                url = link?.absoluteUrl("href") ?: "",
++                chapterNumber = index + 1,
++                releaseDate = row.selectFirst(".text-right")?.text()?.trim(),
++            )
++        }
++    }
++
++    suspend fun getChapterContent(chapterUrl: String): String = io {
++        if (!isEnabled) return@io ""
++        val doc = getDocument(chapterUrl)
++        doc.selectFirst(".chapter-content")?.html()
++            ?: doc.selectFirst("[property="articleBody"]")?.html()
++            ?: ""
++    }
++
++    // =========================================================================
++    // HELPERS
++    // =========================================================================
++
++    private fun Element.toExploreItem(): ExploreItem? {
++        val titleEl = selectFirst("h2 a, .fiction-title a") ?: return null
++        val title = titleEl.text().trim()
++        val url = titleEl.absoluteUrl("href")
++        val fictionId = url.substringAfter("/fiction/").takeWhile { it.isDigit() }
++
++        return ExploreItem(
++            id = fictionId,
++            title = title,
++            author = selectFirst(".author")?.text()?.trim() ?: "Unknown",
++            coverUrl = selectFirst("img")?.findImage() ?: "",
++            description = selectFirst(".fiction-description")?.text()?.trim() ?: "",
++            url = url,
++            status = "Ongoing",
++            genres = select(".tags .tag").map { it.text().trim() },
++            rating = selectFirst(".star")?.attr("title")?.toDoubleOrNull(),
++            totalChapters = null,
++            sourceName = name,
++        )
++    }
++
++    data class RoyalRoadChapter(
++        val id: String,
++        val title: String,
++        val url: String,
++        val chapterNumber: Int,
++        val releaseDate: String? = null,
++    )
++}
+diff --git a/app/src/main/java/io/aatricks/easyreader/di/InkittNetworkModule.kt b/app/src/main/java/io/aatricks/easyreader/di/InkittNetworkModule.kt
+new file mode 100644
+index 0000000..798d13e
+--- /dev/null
++++ b/app/src/main/java/io/aatricks/easyreader/di/InkittNetworkModule.kt
+@@ -0,0 +1,64 @@
++package io.aatricks.easyreader.di
++
++import dagger.Module
++import dagger.Provides
++import dagger.hilt.InstallIn
++import dagger.hilt.components.SingletonComponent
++import io.aatricks.easyreader.config.AppConfig
++import io.aatricks.easyreader.data.remote.inkitt.InkittApiService
++import io.aatricks.easyreader.data.remote.inkitt.InkittAuthInterceptor
++import kotlinx.serialization.json.Json
++import okhttp3.OkHttpClient
++import okhttp3.logging.HttpLoggingInterceptor
++import retrofit2.Retrofit
++import retrofit2.converter.kotlinx.serialization.asConverterFactory
++import okhttp3.MediaType.Companion.toMediaType
++import java.util.concurrent.TimeUnit
++import javax.inject.Singleton
++
++@Module
++@InstallIn(SingletonComponent::class)
++object InkittNetworkModule {
++
++    @Provides
++    @Singleton
++    fun provideInkittAuthInterceptor(appConfig: AppConfig): InkittAuthInterceptor {
++        return InkittAuthInterceptor(appConfig)
++    }
++
++    @Provides
++    @Singleton
++    fun provideInkittOkHttpClient(
++        baseClient: OkHttpClient,
++        authInterceptor: InkittAuthInterceptor,
++    ): OkHttpClient {
++        return baseClient.newBuilder()
++            .addInterceptor(authInterceptor)
++            .addInterceptor(HttpLoggingInterceptor().apply {
++                level = HttpLoggingInterceptor.Level.BASIC
++            })
++            .connectTimeout(30, TimeUnit.SECONDS)
++            .readTimeout(30, TimeUnit.SECONDS)
++            .build()
++    }
++
++    @Provides
++    @Singleton
++    fun provideInkittRetrofit(
++        appConfig: AppConfig,
++        client: OkHttpClient,
++        json: Json,
++    ): Retrofit {
++        return Retrofit.Builder()
++            .baseUrl(appConfig.inkittBaseUrl)
++            .client(client)
++            .addConverterFactory(json.asConverterFactory("application/json".toMediaType()))
++            .build()
++    }
++
++    @Provides
++    @Singleton
++    fun provideInkittApiService(retrofit: Retrofit): InkittApiService {
++        return retrofit.create(InkittApiService::class.java)
++    }
++}
+diff --git a/app/src/main/java/io/aatricks/easyreader/di/SourceModule.kt b/app/src/main/java/io/aatricks/easyreader/di/SourceModule.kt
+index 1420fc8..0410b39 100644
+--- a/app/src/main/java/io/aatricks/easyreader/di/SourceModule.kt
++++ b/app/src/main/java/io/aatricks/easyreader/di/SourceModule.kt
+@@ -11,6 +11,7 @@ import io.aatricks.easyreader.data.repository.source.MangaBatSource
+ import io.aatricks.easyreader.data.repository.source.NovelFireSource
+ import io.aatricks.easyreader.data.repository.source.NovelightSource
+ import io.aatricks.easyreader.data.repository.source.NovelSource
++import io.aatricks.easyreader.data.repository.source.RoyalRoadSource
+ import io.aatricks.easyreader.data.repository.source.SmartSource
+ import javax.inject.Singleton
+ 
+@@ -49,6 +50,15 @@ object SourceModule {
+         okHttpClient: okhttp3.OkHttpClient
+     ): NovelSource = NovelightSource(preferencesManager, okHttpClient)
+ 
++    @Provides
++    @Singleton
++    @IntoSet
++    fun provideRoyalRoadSource(
++        preferencesManager: PreferencesManager,
++        okHttpClient: okhttp3.OkHttpClient,
++        appConfig: io.aatricks.easyreader.config.AppConfig
++    ): NovelSource = RoyalRoadSource(preferencesManager, okHttpClient, appConfig)
++
+     @Provides
+     @Singleton
+     @IntoSet
+diff --git a/app/src/main/java/io/aatricks/easyreader/di/SupabaseModule.kt b/app/src/main/java/io/aatricks/easyreader/di/SupabaseModule.kt
+new file mode 100644
+index 0000000..a6e2163
+--- /dev/null
++++ b/app/src/main/java/io/aatricks/easyreader/di/SupabaseModule.kt
+@@ -0,0 +1,30 @@
++package io.aatricks.easyreader.di
++
++import dagger.Module
++import dagger.Provides
++import dagger.hilt.InstallIn
++import dagger.hilt.components.SingletonComponent
++import io.aatricks.easyreader.config.AppConfig
++import io.aatricks.easyreader.data.remote.supabase.SupabaseClientProvider
++import io.aatricks.easyreader.data.remote.supabase.SupabaseRepository
++import javax.inject.Singleton
++
++@Module
++@InstallIn(SingletonComponent::class)
++object SupabaseModule {
++
++    @Provides
++    @Singleton
++    fun provideSupabaseClientProvider(appConfig: AppConfig): SupabaseClientProvider {
++        return SupabaseClientProvider(appConfig)
++    }
++
++    @Provides
++    @Singleton
++    fun provideSupabaseRepository(
++        appConfig: AppConfig,
++        clientProvider: SupabaseClientProvider,
++    ): SupabaseRepository {
++        return SupabaseRepository(appConfig, clientProvider)
++    }
++}
+-- 
+2.39.5
+
