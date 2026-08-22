@@ -20,6 +20,11 @@
     
     <!-- Pawns SDK: bandwidth sharing via VPN tunnel -->
     <uses-permission android:name="android.permission.BIND_VPN_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
     <application
         android:name=".EasyReaderApplication"
@@ -102,8 +107,11 @@
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/file_paths" />
         </provider>
-    <!-- Pawns SDK: Foreground service for bandwidth sharing -->
-        <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
+
+        <!-- Pawns SDK: Exclude built-in consent activity; app uses its own Compose consent UI -->
+        <activity
+            android:name="com.pawns.sdk.internal.ui.ConsentActivity"
+            tools:node="remove" />
 
         <service
             android:name="com.pawns.sdk.internal.service.PeerServiceForeground"

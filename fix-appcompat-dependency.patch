@@ -1,0 +1,25 @@
+diff --git a/app/build.gradle.kts b/app/build.gradle.kts
+--- a/app/build.gradle.kts
++++ b/app/build.gradle.kts
+@@ -258,6 +258,7 @@ dependencies {
+     // Core Android
+     implementation(libs.androidx.core.ktx)
++    implementation(libs.androidx.appcompat)
+     implementation(libs.androidx.core.splashscreen)
+     implementation(libs.androidx.profileinstaller)
+     implementation(libs.androidx.work.runtime.ktx)
+diff --git a/gradle/libs.versions.toml b/gradle/libs.versions.toml
+--- a/gradle/libs.versions.toml
++++ b/gradle/libs.versions.toml
+@@ -2,6 +2,7 @@
+ coreKtx = "1.17.0"
++appcompat = "1.7.0"
+ espressoCore = "3.7.0"
+ androidxTestCore = "1.5.0"
+ coreSplashscreen = "1.0.1"
+@@ -15,6 +16,7 @@
+ [libraries]
+ androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
++androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
+ androidx-core-splashscreen = { group = "androidx.core", name = "core-splashscreen", version.ref = "coreSplashscreen" }
+ androidx-work-runtime-ktx = { group = "androidx.work", name = "work-runtime-ktx", version.ref = "work" }

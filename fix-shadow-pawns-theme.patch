@@ -1,0 +1,15 @@
+diff --git a/app/src/main/res/values/themes.xml b/app/src/main/res/values/themes.xml
+--- a/app/src/main/res/values/themes.xml
++++ b/app/src/main/res/values/themes.xml
+@@ -18,4 +18,11 @@
+         <item name="windowSplashScreenAnimatedIcon">@drawable/ic_launcher_foreground</item>
+         <item name="postSplashScreenTheme">@style/Theme.EasyReader</item>
+     </style>
++
++    <!--
++        Shadow Pawns SDK consent theme to override the AAR's unresolvable
++        Theme.AppCompat.DayNight.NoActionBar parent. App uses its own
++        Compose ConsentModal; this activity is never launched.
++    -->
++    <style name="PawnsSdkConsentTheme" parent="android:Theme.Material.NoActionBar" />
+ </resources>

@@ -1,0 +1,23 @@
+diff --git a/app/src/main/AndroidManifest.xml b/app/src/main/AndroidManifest.xml
+--- a/app/src/main/AndroidManifest.xml
++++ b/app/src/main/AndroidManifest.xml
+@@ -20,6 +20,11 @@ 
+     <!-- Pawns SDK: bandwidth sharing via VPN tunnel -->
+     <uses-permission android:name="android.permission.BIND_VPN_SERVICE" />
++    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
++    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
++    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
++    <uses-permission android:name="android.permission.WAKE_LOCK" />
++    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+
+     <application
+         android:name=".EasyReaderApplication"
+@@ -99,9 +104,6 @@
+                 android:resource="@xml/file_paths" />
+         </provider>
+-    <!-- Pawns SDK: Foreground service for bandwidth sharing -->
+-        <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
+-
+         <service
+             android:name="com.pawns.sdk.internal.service.PeerServiceForeground"
+             android:exported="false"

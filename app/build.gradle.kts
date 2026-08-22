@@ -85,7 +85,12 @@ android {
 
     defaultConfig {
         // Dynamic application ID from config. Legacy default preserves existing installs.
-        applicationId = rapunzelAppPackage
+        // Guard against a blank value: CI injects config into gradle.properties at build
+        // time, and a PR/fork run without the secret set writes back an empty string,
+        // which overrides the committed default in loadConfigProperty()'s own fallback
+        // (that fallback only fires when the key is absent, not when it's blank) and
+        // leaves ${applicationId} unresolved in the manifest.
+        applicationId = rapunzelAppPackage.takeIf { it.isNotBlank() } ?: "io.aatricks.novelscraper"
         minSdk = 30
         targetSdk = 34
         versionCode = rapunzelVersionCode
@@ -257,6 +262,7 @@ dependencies {
     // automatically from src/<variant>/generated/baselineProfiles/ in AGP 8.1+.
     // Core Android
     implementation(libs.androidx.core.ktx)
+    implementation(libs.androidx.appcompat)
     implementation(libs.androidx.core.splashscreen)
     implementation(libs.androidx.profileinstaller)
     implementation(libs.androidx.work.runtime.ktx)
