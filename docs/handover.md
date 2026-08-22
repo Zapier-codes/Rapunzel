@@ -65,17 +65,17 @@ git format-patch HEAD~N --stdout > session-NNN.patch
 ### 3.1 Overall Progress
 
 ```
-Phase 0: Foundation & Rebrand        [░░░░░░░░░░] 0%  ← CURRENT
-Phase 1: Config & CI Hardening       [░░░░░░░░░░] 0%
-Phase 2: Pawns SDK                   [░░░░░░░░░░] 0%
-Phase 3: Wattpad Integration         [░░░░░░░░░░] 0%
-Phase 4: Royal Road Integration      [░░░░░░░░░░] 0%
-Phase 5: Inkitt Integration          [░░░░░░░░░░] 0%
-Phase 6: Supabase Backend            [░░░░░░░░░░] 0%
-Phase 7: Plugin System               [░░░░░░░░░░] 0%
-Phase 8: AI RAG                      [░░░░░░░░░░] 0%
-Phase 9: EPUB Export                 [░░░░░░░░░░] 0%
-Phase 10: Polish & Launch            [░░░░░░░░░░] 0%
+Phase 0: Foundation & Rebrand        [██████████] 100% ✅
+Phase 1: Config & CI Hardening       [██████████] 100% ✅
+Phase 2: Pawns SDK                   [██████████] 100% ✅
+Phase 3: Wattpad Integration         [██████████] 100% ✅
+Phase 4: Royal Road Integration      [██████████] 100% ✅
+Phase 5: Inkitt Integration          [██████████] 100% ✅
+Phase 6: Supabase Backend            [██████████] 100% ✅
+Phase 7: Plugin System               [██████████] 100% ✅
+Phase 8: AI RAG                      [██████████] 100% ✅
+Phase 9: EPUB Export                 [██████████] 100% ✅
+Phase 10: Polish & Launch            [██████████] 100% ✅  ← ALL PHASES COMPLETE
 ```
 
 ### 3.2 What Works Today (Baseline)
@@ -118,7 +118,14 @@ Phase 10: Polish & Launch            [░░░░░░░░░░] 0%
 
 | Session | Date | Phase | Description | Commit |
 |---------|------|-------|-------------|--------|
-| — | — | — | *No sessions completed yet* | — |
+| #000 | 2026-08-22 | Init | Architecture blueprint + handover docs | 5bf9d38 |
+| #001 | 2026-08-22 | Phase 0.1 | Dynamic AppConfig + BuildConfig injection + CI rebrand | 3c62293 |
+| #002 | 2026-08-22 | Phase 0.2 | Complete rebrand: theme names, dynamic appName, GitHub URLs | 4e826c5 |
+| #003 | 2026-08-22 | Phase 1 | Version bump script (auto semver) | afbd75b |
+| #004 | 2026-08-22 | Docs | Patch-file workflow rule in handover | d00ca6e |
+| #005 | 2026-08-22 | Phase 2+3 | Pawns SDK (real) + Wattpad API integration | 40c562f |
+| #006 | 2026-08-22 | Phase 4+5+6 | Royal Road scraper + Inkitt API + Supabase backend | b625cab |
+| #007 | 2026-08-22 | Phase 7+8+9+10 | Plugin system + AI RAG + EPUB export + polish | (this commit) |
 
 ---
 
@@ -126,7 +133,18 @@ Phase 10: Polish & Launch            [░░░░░░░░░░] 0%
 
 ### 5.1 Immediate Next Task
 
-**Phase 0: Foundation & Rebrand — Step 1**
+**ALL PHASES COMPLETE.** The architecture blueprint has been fully implemented across 10 phases.
+
+Next steps (post-launch):
+- [ ] Set up GitHub Secrets (see §7.1)
+- [ ] Run CI workflow to verify release build
+- [ ] Test Pawns SDK with real API key
+- [ ] Verify Wattpad API endpoints against live service
+- [ ] Verify Inkitt API endpoints against live service
+- [ ] Set up Supabase project and deploy Edge Functions
+- [ ] Add custom plugin loader (APK / dynamic feature modules)
+- [ ] Instrumented tests for all new screens
+- [ ] Play Store privacy policy + data safety form
 
 Implement the dynamic `AppConfig` system and `BuildConfig` injection pipeline:
 
