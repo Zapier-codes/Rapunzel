@@ -4,7 +4,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Shapes
 import androidx.compose.ui.unit.dp
 
-object EasyReaderSpacing {
+object RapunzelSpacing {
     val xxs = 4.dp
     val xs = 8.dp
     val sm = 12.dp
@@ -14,13 +14,13 @@ object EasyReaderSpacing {
     val xxl = 32.dp
 }
 
-object EasyReaderMotion {
+object RapunzelMotion {
     const val short = 180
     const val medium = 260
     const val long = 340
 }
 
-val EasyReaderShapes = Shapes(
+val RapunzelShapes = Shapes(
     extraSmall = RoundedCornerShape(10.dp),
     small = RoundedCornerShape(14.dp),
     medium = RoundedCornerShape(18.dp),

@@ -21,7 +21,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.DpSize
-import io.aatricks.easyreader.ui.theme.EasyReaderSpacing
+import io.aatricks.easyreader.ui.theme.RapunzelSpacing
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
 
@@ -37,7 +37,7 @@ fun TopInfoBar(
         modifier = Modifier
             .fillMaxWidth()
             .statusBarsPadding()
-            .padding(horizontal = EasyReaderSpacing.sm, vertical = EasyReaderSpacing.xs),
+            .padding(horizontal = RapunzelSpacing.sm, vertical = RapunzelSpacing.xs),
         shape = MaterialTheme.shapes.extraLarge,
         color = MaterialTheme.colorScheme.surface.copy(alpha = 0.94f),
         contentColor = MaterialTheme.colorScheme.onSurface,
@@ -47,9 +47,9 @@ fun TopInfoBar(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = EasyReaderSpacing.xs, vertical = 6.dp),
+                .padding(horizontal = RapunzelSpacing.xs, vertical = 6.dp),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(EasyReaderSpacing.xs)
+            horizontalArrangement = Arrangement.spacedBy(RapunzelSpacing.xs)
         ) {
             FilledTonalIconButton(
                 onClick = onLibraryClick,
@@ -94,7 +94,7 @@ fun TopInfoBar(
                     contentDescription = null,
                     modifier = Modifier.size(18.dp)
                 )
-                Spacer(modifier = Modifier.width(EasyReaderSpacing.xxs))
+                Spacer(modifier = Modifier.width(RapunzelSpacing.xxs))
                 Text(
                     text = "Chapters",
                     style = MaterialTheme.typography.labelLarge,
@@ -133,7 +133,7 @@ fun BottomNavigationBar(
         modifier = Modifier
             .fillMaxWidth()
             .navigationBarsPadding()
-            .padding(horizontal = EasyReaderSpacing.sm, vertical = EasyReaderSpacing.xs),
+            .padding(horizontal = RapunzelSpacing.sm, vertical = RapunzelSpacing.xs),
         shape = MaterialTheme.shapes.extraLarge,
         color = MaterialTheme.colorScheme.surface.copy(alpha = 0.94f),
         contentColor = MaterialTheme.colorScheme.onSurface,
@@ -141,8 +141,8 @@ fun BottomNavigationBar(
         shadowElevation = 6.dp
     ) {
         Column(
-            modifier = Modifier.padding(horizontal = EasyReaderSpacing.sm, vertical = 10.dp),
-            verticalArrangement = Arrangement.spacedBy(EasyReaderSpacing.xs)
+            modifier = Modifier.padding(horizontal = RapunzelSpacing.sm, vertical = 10.dp),
+            verticalArrangement = Arrangement.spacedBy(RapunzelSpacing.xs)
         ) {
             var sliderValue by remember(progress) { mutableFloatStateOf(progress) }
             val sliderInteractionSource = remember { MutableInteractionSource() }
@@ -170,7 +170,7 @@ fun BottomNavigationBar(
                 ) {
                     Text(
                         text = "${sliderValue.toInt()}%",
-                        modifier = Modifier.padding(horizontal = 10.dp, vertical = EasyReaderSpacing.xxs),
+                        modifier = Modifier.padding(horizontal = 10.dp, vertical = RapunzelSpacing.xxs),
                         style = MaterialTheme.typography.labelMedium,
                         fontWeight = FontWeight.SemiBold
                     )
@@ -207,7 +207,7 @@ fun BottomNavigationBar(
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(EasyReaderSpacing.xs),
+                horizontalArrangement = Arrangement.spacedBy(RapunzelSpacing.xs),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 ChapterNavButton(
@@ -252,7 +252,7 @@ private fun ChapterNavButton(
                 contentDescription = null,
                 modifier = Modifier.size(18.dp)
             )
-            Spacer(modifier = Modifier.width(EasyReaderSpacing.xxs))
+            Spacer(modifier = Modifier.width(RapunzelSpacing.xxs))
         }
 
         Text(
@@ -262,7 +262,7 @@ private fun ChapterNavButton(
         )
 
         if (!leading) {
-            Spacer(modifier = Modifier.width(EasyReaderSpacing.xxs))
+            Spacer(modifier = Modifier.width(RapunzelSpacing.xxs))
             Icon(
                 imageVector = Icons.AutoMirrored.Filled.ArrowForward,
                 contentDescription = null,

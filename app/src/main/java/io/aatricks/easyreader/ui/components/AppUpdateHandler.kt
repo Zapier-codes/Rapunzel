@@ -26,7 +26,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.material3.Surface
-import io.aatricks.easyreader.ui.theme.EasyReaderSpacing
+import io.aatricks.easyreader.ui.theme.RapunzelSpacing
 import io.aatricks.easyreader.ui.viewmodel.UpdateViewModel
 import io.aatricks.easyreader.updater.DownloadStatus
 import io.aatricks.easyreader.updater.UpdateCheckResult
@@ -39,7 +39,8 @@ private const val DEFERRED_STARTUP_DELAY_MS = 2000L
 @Composable
 fun appUpdateHandler(
     updateViewModel: UpdateViewModel,
-    updateState: UpdateViewModel.UpdateUiState
+    updateState: UpdateViewModel.UpdateUiState,
+    appName: String
 ) {
     val context = LocalContext.current
     var showUpdateDialog by remember { mutableStateOf(false) }
@@ -111,16 +112,17 @@ private fun updateDialog(
     update: UpdateCheckResult.NewVersion,
     currentVersion: String,
     updateViewModel: UpdateViewModel,
-    onDismiss: () -> Unit
+    onDismiss: () -> Unit,
+    appName: String = ""
 ) {
     AlertDialog(
         onDismissRequest = { 
             onDismiss()
             updateViewModel.clearUpdateState()
         },
-        title = { Text("Update Emaki") },
+        title = { Text("Update $appName") },
         text = {
-            Column(verticalArrangement = Arrangement.spacedBy(EasyReaderSpacing.sm)) {
+            Column(verticalArrangement = Arrangement.spacedBy(RapunzelSpacing.sm)) {
                 Text(
                     text = "Version $currentVersion  →  ${update.versionName}",
                     style = MaterialTheme.typography.titleSmall,
@@ -175,7 +177,7 @@ private fun changelogContent(changelog: String) {
     ) {
         Box(
             modifier = Modifier
-                .padding(EasyReaderSpacing.md)
+                .padding(RapunzelSpacing.md)
                 .verticalScroll(rememberScrollState())
         ) {
             Text(
@@ -258,7 +260,8 @@ private fun installDialog(
 @Composable
 private fun permissionWarningDialog(
     updateViewModel: UpdateViewModel,
-    onDismiss: () -> Unit
+    onDismiss: () -> Unit,
+    appName: String = ""
 ) {
     val context = LocalContext.current
     AlertDialog(
@@ -266,7 +269,7 @@ private fun permissionWarningDialog(
         title = { Text("Permission Required") },
         text = {
             Text(
-                "To install updates, Emaki needs permission to install apps from " +
+                "To install updates, $appName needs permission to install apps from " +
                     "unknown sources. You will be taken to system settings to enable this."
             )
         },

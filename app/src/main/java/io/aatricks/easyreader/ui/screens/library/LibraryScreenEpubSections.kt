@@ -37,7 +37,7 @@ import io.aatricks.easyreader.data.model.EpubBook
 import io.aatricks.easyreader.data.model.EpubTocItem
 import io.aatricks.easyreader.data.model.LibraryItem
 import io.aatricks.easyreader.data.repository.ContentRepository
-import io.aatricks.easyreader.ui.theme.EasyReaderSpacing
+import io.aatricks.easyreader.ui.theme.RapunzelSpacing
 import io.aatricks.easyreader.ui.viewmodel.LibraryViewModel
 import io.aatricks.easyreader.ui.viewmodel.ReaderViewModel
 
@@ -70,10 +70,10 @@ internal fun EpubItemCard(
             }
         )
     ) {
-        Column(modifier = Modifier.padding(EasyReaderSpacing.sm)) {
+        Column(modifier = Modifier.padding(RapunzelSpacing.sm)) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(EasyReaderSpacing.xs),
+                horizontalArrangement = Arrangement.spacedBy(RapunzelSpacing.xs),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 if (uiState.isSelectionMode) {
@@ -131,11 +131,11 @@ internal fun EpubItemCard(
             }
 
             if (isExpanded) epubBook?.let { book ->
-                Spacer(modifier = Modifier.height(EasyReaderSpacing.xs))
+                Spacer(modifier = Modifier.height(RapunzelSpacing.xs))
                 androidx.compose.material3.HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-                Spacer(modifier = Modifier.height(EasyReaderSpacing.xs))
+                Spacer(modifier = Modifier.height(RapunzelSpacing.xs))
 
-                Column(verticalArrangement = Arrangement.spacedBy(EasyReaderSpacing.xxs)) {
+                Column(verticalArrangement = Arrangement.spacedBy(RapunzelSpacing.xxs)) {
                     book.toc.forEach { tocItem ->
                         EpubTocItemView(
                             tocItem = tocItem,
@@ -166,8 +166,8 @@ private fun EpubTocItemView(
     var isExpanded by remember { mutableStateOf(false) }
     val startPadding = when (depth) {
         0 -> 0.dp
-        1 -> EasyReaderSpacing.md
-        2 -> EasyReaderSpacing.xxl
+        1 -> RapunzelSpacing.md
+        2 -> RapunzelSpacing.xxl
         else -> 48.dp
     }
 
@@ -182,7 +182,7 @@ private fun EpubTocItemView(
                         onCloseLibrary()
                     }
                 )
-                .padding(start = startPadding, top = EasyReaderSpacing.xs, bottom = EasyReaderSpacing.xs),
+                .padding(start = startPadding, top = RapunzelSpacing.xs, bottom = RapunzelSpacing.xs),
             verticalAlignment = Alignment.CenterVertically
         ) {
             if (tocItem.hasChildren()) {
@@ -197,9 +197,9 @@ private fun EpubTocItemView(
                         modifier = Modifier.size(16.dp)
                     )
                 }
-                Spacer(modifier = Modifier.width(EasyReaderSpacing.xxs))
+                Spacer(modifier = Modifier.width(RapunzelSpacing.xxs))
             } else {
-                Spacer(modifier = Modifier.width(EasyReaderSpacing.xl))
+                Spacer(modifier = Modifier.width(RapunzelSpacing.xl))
             }
 
             Text(

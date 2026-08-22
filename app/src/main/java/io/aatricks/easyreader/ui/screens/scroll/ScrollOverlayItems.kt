@@ -28,7 +28,7 @@ import coil3.compose.AsyncImage
 import io.aatricks.easyreader.data.model.MilestoneState
 import io.aatricks.easyreader.data.repository.FinishedSeriesData
 import io.aatricks.easyreader.ui.components.rememberLibraryCoverImageRequest
-import io.aatricks.easyreader.ui.theme.EasyReaderSpacing
+import io.aatricks.easyreader.ui.theme.RapunzelSpacing
 
 // Vignettes (finished series), framed like hanging kakejiku
 private const val VIGNETTE_FRAME_WIDTH_DP = 96f
@@ -122,7 +122,7 @@ internal fun SeriesVignette(
                 }
             }
         }
-        Spacer(modifier = Modifier.height(EasyReaderSpacing.xs))
+        Spacer(modifier = Modifier.height(RapunzelSpacing.xs))
         PaperTag(text = series.title, palette = palette)
     }
 }
@@ -152,7 +152,7 @@ internal fun HankoSeal(
                 color = palette.sealKanji
             )
         }
-        Spacer(modifier = Modifier.height(EasyReaderSpacing.xs))
+        Spacer(modifier = Modifier.height(RapunzelSpacing.xs))
         PaperTag(text = milestone.name.uppercase(), palette = palette, letterSpaced = true)
     }
 }

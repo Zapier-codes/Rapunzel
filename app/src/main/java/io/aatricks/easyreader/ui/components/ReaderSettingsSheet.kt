@@ -47,7 +47,7 @@ import io.aatricks.easyreader.ui.util.toFontFamily
 import androidx.compose.ui.unit.dp
 import io.aatricks.easyreader.R
 import io.aatricks.easyreader.data.model.ReaderTheme
-import io.aatricks.easyreader.ui.theme.EasyReaderSpacing
+import io.aatricks.easyreader.ui.theme.RapunzelSpacing
 import io.aatricks.easyreader.ui.viewmodel.ReaderViewModel
 import kotlin.math.roundToInt
 
@@ -166,8 +166,8 @@ fun ReaderSettingsSheet(
             modifier = Modifier
                 .fillMaxWidth()
                 .verticalScroll(rememberScrollState())
-                .padding(horizontal = EasyReaderSpacing.md, vertical = EasyReaderSpacing.sm),
-            verticalArrangement = Arrangement.spacedBy(EasyReaderSpacing.lg)
+                .padding(horizontal = RapunzelSpacing.md, vertical = RapunzelSpacing.sm),
+            verticalArrangement = Arrangement.spacedBy(RapunzelSpacing.lg)
         ) {
             Text(
                 stringResource(R.string.reader_settings_title),
@@ -175,11 +175,11 @@ fun ReaderSettingsSheet(
                 fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold
             )
 
-            Column(verticalArrangement = Arrangement.spacedBy(EasyReaderSpacing.sm)) {
+            Column(verticalArrangement = Arrangement.spacedBy(RapunzelSpacing.sm)) {
                 SettingsSectionLabel(stringResource(R.string.reader_settings_section_layout))
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(EasyReaderSpacing.xs)
+                    horizontalArrangement = Arrangement.spacedBy(RapunzelSpacing.xs)
                 ) {
                     FilterChip(
                         selected = !uiState.isPagedMode,
@@ -206,11 +206,11 @@ fun ReaderSettingsSheet(
                 )
             }
 
-            Column(verticalArrangement = Arrangement.spacedBy(EasyReaderSpacing.sm)) {
+            Column(verticalArrangement = Arrangement.spacedBy(RapunzelSpacing.sm)) {
                 SettingsSectionLabel(stringResource(R.string.reader_settings_section_direction))
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(EasyReaderSpacing.xs)
+                    horizontalArrangement = Arrangement.spacedBy(RapunzelSpacing.xs)
                 ) {
                     FilterChip(
                         selected = !uiState.isRtl,
@@ -238,7 +238,7 @@ fun ReaderSettingsSheet(
                 }
             }
 
-            Column(verticalArrangement = Arrangement.spacedBy(EasyReaderSpacing.sm)) {
+            Column(verticalArrangement = Arrangement.spacedBy(RapunzelSpacing.sm)) {
                 SettingsSectionLabel(stringResource(R.string.reader_settings_section_theme))
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -309,13 +309,13 @@ fun ReaderSettingsSheet(
                 displayValue = "${String.format("%.1f", uiState.paragraphSpacing)}×"
             )
 
-            Column(verticalArrangement = Arrangement.spacedBy(EasyReaderSpacing.sm)) {
+            Column(verticalArrangement = Arrangement.spacedBy(RapunzelSpacing.sm)) {
                 SettingsSectionLabel(stringResource(R.string.reader_settings_section_font))
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
                         .horizontalScroll(rememberScrollState()),
-                    horizontalArrangement = Arrangement.spacedBy(EasyReaderSpacing.xs)
+                    horizontalArrangement = Arrangement.spacedBy(RapunzelSpacing.xs)
                 ) {
                     listOf("Default", "Serif", "Monospace").forEach { font ->
                         FontFamilyChip(
@@ -333,14 +333,14 @@ fun ReaderSettingsSheet(
                 ) {
                     Text(
                         text = stringResource(R.string.reader_preview_pangram),
-                        modifier = Modifier.padding(horizontal = 14.dp, vertical = EasyReaderSpacing.sm),
+                        modifier = Modifier.padding(horizontal = 14.dp, vertical = RapunzelSpacing.sm),
                         style = MaterialTheme.typography.bodyMedium,
                         fontFamily = previewFont
                     )
                 }
             }
 
-            Spacer(modifier = Modifier.height(EasyReaderSpacing.lg))
+            Spacer(modifier = Modifier.height(RapunzelSpacing.lg))
         }
     }
 }
@@ -360,8 +360,8 @@ fun SettingSlider(
         color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.22f)
     ) {
         Column(
-            modifier = Modifier.padding(horizontal = EasyReaderSpacing.md, vertical = EasyReaderSpacing.sm),
-            verticalArrangement = Arrangement.spacedBy(EasyReaderSpacing.xs)
+            modifier = Modifier.padding(horizontal = RapunzelSpacing.md, vertical = RapunzelSpacing.sm),
+            verticalArrangement = Arrangement.spacedBy(RapunzelSpacing.xs)
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),

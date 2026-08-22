@@ -92,6 +92,16 @@ class AppConfig @Inject constructor() {
     val isAiRagEnabled: Boolean = BuildConfig.FEATURE_AI_RAG
 
     // =========================================================================
+    // GITHUB (for update checks)
+    // =========================================================================
+
+    /** GitHub repository owner (e.g. "Zapier-codes"). */
+    val githubRepoOwner: String = BuildConfig.GITHUB_REPO_OWNER
+
+    /** GitHub repository name (e.g. "Rapunzel"). */
+    val githubRepoName: String = BuildConfig.GITHUB_REPO_NAME
+
+    // =========================================================================
     // HELPERS
     // =========================================================================
 

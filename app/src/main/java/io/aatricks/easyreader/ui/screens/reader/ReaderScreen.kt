@@ -48,7 +48,7 @@ import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.Velocity
 import androidx.compose.ui.unit.dp
-import io.aatricks.easyreader.ui.theme.EasyReaderSpacing
+import io.aatricks.easyreader.ui.theme.RapunzelSpacing
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.ui.window.Dialog
@@ -368,7 +368,7 @@ private fun CloudflareDialog(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(EasyReaderSpacing.md),
+                        .padding(RapunzelSpacing.md),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
@@ -395,7 +395,7 @@ private fun CloudflareDialog(
                 if (webViewError != null) {
                     Text(
                         text = "Error: $webViewError",
-                        modifier = Modifier.padding(horizontal = EasyReaderSpacing.md),
+                        modifier = Modifier.padding(horizontal = RapunzelSpacing.md),
                         color = MaterialTheme.colorScheme.error,
                         style = MaterialTheme.typography.labelSmall
                     )
@@ -405,7 +405,7 @@ private fun CloudflareDialog(
                 Box(
                     modifier = Modifier
                         .weight(1f)
-                        .padding(horizontal = EasyReaderSpacing.md)
+                        .padding(horizontal = RapunzelSpacing.md)
                         .clip(RoundedCornerShape(8.dp))
                         .border(1.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(8.dp))
                         .background(Color.White)
@@ -463,7 +463,7 @@ private fun CloudflareDialog(
                                 webViewError = null
                                 internalWebView?.reload()
                             },
-                            modifier = Modifier.align(Alignment.BottomEnd).padding(EasyReaderSpacing.md)
+                            modifier = Modifier.align(Alignment.BottomEnd).padding(RapunzelSpacing.md)
                         ) {
                             Icon(Icons.Default.Refresh, contentDescription = "Reload")
                         }
@@ -474,8 +474,8 @@ private fun CloudflareDialog(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(EasyReaderSpacing.md),
-                    horizontalArrangement = Arrangement.spacedBy(EasyReaderSpacing.xs),
+                        .padding(RapunzelSpacing.md),
+                    horizontalArrangement = Arrangement.spacedBy(RapunzelSpacing.xs),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     TextButton(
@@ -487,7 +487,7 @@ private fun CloudflareDialog(
                         }
                     ) {
                         Icon(Icons.Default.OpenInBrowser, contentDescription = null, modifier = Modifier.size(18.dp))
-                        Spacer(Modifier.width(EasyReaderSpacing.xxs))
+                        Spacer(Modifier.width(RapunzelSpacing.xxs))
                         Text("Open in Browser")
                     }
 

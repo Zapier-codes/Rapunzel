@@ -23,7 +23,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import io.aatricks.easyreader.data.model.ExploreItem
 import io.aatricks.easyreader.data.repository.source.BrowseMode
-import io.aatricks.easyreader.ui.theme.EasyReaderSpacing
+import io.aatricks.easyreader.ui.theme.RapunzelSpacing
 import io.aatricks.easyreader.ui.viewmodel.ExploreViewModel
 import io.aatricks.easyreader.ui.viewmodel.LibraryViewModel
 import kotlinx.coroutines.launch
@@ -188,14 +188,14 @@ private fun ExploreContent(
 ): Unit {
     val gridState = rememberLazyGridState()
 
-    Column(modifier = modifier.padding(horizontal = EasyReaderSpacing.sm, vertical = EasyReaderSpacing.xs)) {
+    Column(modifier = modifier.padding(horizontal = RapunzelSpacing.sm, vertical = RapunzelSpacing.xs)) {
         SearchField(
             query = uiState.searchQuery,
             onQueryChange = onSearchQueryChange,
             onPerformSearch = onPerformSearch
         )
 
-        Spacer(modifier = Modifier.height(EasyReaderSpacing.xs))
+        Spacer(modifier = Modifier.height(RapunzelSpacing.xs))
 
         ActiveFilterBar(
             uiState = uiState,
@@ -207,14 +207,14 @@ private fun ExploreContent(
         )
 
         if (uiState.searchQuery.isBlank()) {
-            Spacer(modifier = Modifier.height(EasyReaderSpacing.xs))
+            Spacer(modifier = Modifier.height(RapunzelSpacing.xs))
             BrowseModeTabs(
                 selected = uiState.browseMode,
                 onSelect = onSetBrowseMode
             )
         }
 
-        Spacer(modifier = Modifier.height(EasyReaderSpacing.sm))
+        Spacer(modifier = Modifier.height(RapunzelSpacing.sm))
 
         ExploreGrid(
             gridState = gridState,
@@ -279,7 +279,7 @@ private fun ActiveFilterBar(
             .fillMaxWidth()
             .horizontalScroll(rememberScrollState()),
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(EasyReaderSpacing.xs)
+        horizontalArrangement = Arrangement.spacedBy(RapunzelSpacing.xs)
     ) {
         AssistChip(
             onClick = onOpenFilters,
@@ -339,7 +339,7 @@ private fun ActiveFilterBar(
         if (hasActiveFilters) {
             TextButton(
                 onClick = onClearFilters,
-                contentPadding = PaddingValues(horizontal = EasyReaderSpacing.xs)
+                contentPadding = PaddingValues(horizontal = RapunzelSpacing.xs)
             ) {
                 Text("Clear")
             }
@@ -378,8 +378,8 @@ private fun FiltersBottomSheetContent(
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = EasyReaderSpacing.md, vertical = EasyReaderSpacing.sm),
-        verticalArrangement = Arrangement.spacedBy(EasyReaderSpacing.md)
+            .padding(horizontal = RapunzelSpacing.md, vertical = RapunzelSpacing.sm),
+        verticalArrangement = Arrangement.spacedBy(RapunzelSpacing.md)
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -401,8 +401,8 @@ private fun FiltersBottomSheetContent(
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
         FlowRow(
-            horizontalArrangement = Arrangement.spacedBy(EasyReaderSpacing.xs),
-            verticalArrangement = Arrangement.spacedBy(EasyReaderSpacing.xs)
+            horizontalArrangement = Arrangement.spacedBy(RapunzelSpacing.xs),
+            verticalArrangement = Arrangement.spacedBy(RapunzelSpacing.xs)
         ) {
             FilterChip(
                 selected = uiState.selectedSource == null,
@@ -437,8 +437,8 @@ private fun FiltersBottomSheetContent(
                 }
             }
             FlowRow(
-                horizontalArrangement = Arrangement.spacedBy(EasyReaderSpacing.xs),
-                verticalArrangement = Arrangement.spacedBy(EasyReaderSpacing.xs)
+                horizontalArrangement = Arrangement.spacedBy(RapunzelSpacing.xs),
+                verticalArrangement = Arrangement.spacedBy(RapunzelSpacing.xs)
             ) {
                 uiState.availableTags.forEach { tag ->
                     FilterChip(
@@ -456,6 +456,6 @@ private fun FiltersBottomSheetContent(
             )
         }
 
-        Spacer(modifier = Modifier.height(EasyReaderSpacing.lg))
+        Spacer(modifier = Modifier.height(RapunzelSpacing.lg))
     }
 }

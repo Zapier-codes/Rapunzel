@@ -15,7 +15,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import io.aatricks.easyreader.ui.theme.EasyReaderSpacing
+import io.aatricks.easyreader.ui.theme.RapunzelSpacing
 import io.aatricks.easyreader.R
 
 @Composable
@@ -37,13 +37,13 @@ fun FileConfirmationDialog(
         text = {
             Column {
                 Text(stringResource(R.string.file_confirm_intro))
-                Spacer(Modifier.height(EasyReaderSpacing.xs))
+                Spacer(Modifier.height(RapunzelSpacing.xs))
                 Text(
                     text = fileUri,
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
-                Spacer(Modifier.height(EasyReaderSpacing.md))
+                Spacer(Modifier.height(RapunzelSpacing.md))
                 Text(
                     text = stringResource(R.string.file_confirm_trust),
                     style = MaterialTheme.typography.bodyMedium

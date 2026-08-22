@@ -19,6 +19,7 @@ import okhttp3.OkHttpClient
 import okhttp3.Request
 import java.io.File
 import java.util.concurrent.TimeUnit
+import io.aatricks.easyreader.config.AppConfig
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -101,8 +102,8 @@ class AppUpdateManager @Inject constructor(
     private companion object {
         private const val TIMEOUT_SECONDS = 30L
         private const val BUFFER_SIZE = 8192
-        private const val GITHUB_API_URL = "https://api.github.com/repos/Aatricks/EasyReader/releases/latest"
-        private const val GITHUB_COMPARE_API_URL = "https://api.github.com/repos/Aatricks/EasyReader/compare"
+        private val GITHUB_API_URL get() = "https://api.github.com/repos/${appConfig.githubRepoOwner}/${appConfig.githubRepoName}/releases/latest"
+        private val GITHUB_COMPARE_API_URL get() = "https://api.github.com/repos/${appConfig.githubRepoOwner}/${appConfig.githubRepoName}/compare"
         private const val GITHUB_API_ACCEPT_HEADER = "application/vnd.github.v3+json"
         private val COMMIT_SHA_REGEX = Regex("[0-9a-fA-F]{40}")
         

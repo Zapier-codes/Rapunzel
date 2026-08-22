@@ -29,7 +29,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import io.aatricks.easyreader.ui.theme.EasyReaderSpacing
+import io.aatricks.easyreader.ui.theme.RapunzelSpacing
 
 /**
  * Grid-cell-sized shimmer placeholder used while a list of items is loading.
@@ -56,7 +56,7 @@ fun LoadingTile(
         modifier = modifier
             .fillMaxWidth()
             .height(height)
-            .clip(RoundedCornerShape(EasyReaderSpacing.sm))
+            .clip(RoundedCornerShape(RapunzelSpacing.sm))
             .background(base.copy(alpha = alpha))
     )
 }
@@ -75,11 +75,11 @@ fun ErrorTile(
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(EasyReaderSpacing.sm))
+            .clip(RoundedCornerShape(RapunzelSpacing.sm))
             .background(MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.4f))
-            .padding(EasyReaderSpacing.md),
+            .padding(RapunzelSpacing.md),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(EasyReaderSpacing.xs)
+        verticalArrangement = Arrangement.spacedBy(RapunzelSpacing.xs)
     ) {
         Icon(
             imageVector = Icons.Default.WarningAmber,
@@ -94,7 +94,7 @@ fun ErrorTile(
             textAlign = TextAlign.Center
         )
         if (onRetry != null) {
-            Spacer(modifier = Modifier.height(EasyReaderSpacing.xxs))
+            Spacer(modifier = Modifier.height(RapunzelSpacing.xxs))
             AssistChip(
                 onClick = onRetry,
                 label = { Text("Retry") }

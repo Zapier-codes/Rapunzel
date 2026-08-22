@@ -32,7 +32,7 @@ import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import io.aatricks.easyreader.ui.theme.EasyReaderSpacing
+import io.aatricks.easyreader.ui.theme.RapunzelSpacing
 import io.aatricks.easyreader.data.model.LibraryItem
 import io.aatricks.easyreader.data.model.hasActionableUpdate
 import androidx.compose.ui.layout.ContentScale
@@ -215,7 +215,7 @@ fun LibraryItemCard(
                     if (isCurrent) {
                         Badge(
                             containerColor = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.padding(start = EasyReaderSpacing.xs)
+                            modifier = Modifier.padding(start = RapunzelSpacing.xs)
                         ) {
                             Text(
                                 text = "Reading",
@@ -227,7 +227,7 @@ fun LibraryItemCard(
                         Badge(
                             containerColor = MaterialTheme.colorScheme.tertiary,
                             modifier = Modifier
-                                .padding(start = EasyReaderSpacing.xs)
+                                .padding(start = RapunzelSpacing.xs)
                                 .then(
                                     if (onNewTagClick != null) {
                                         Modifier.clickable { onNewTagClick() }
@@ -249,7 +249,7 @@ fun LibraryItemCard(
                             contentDescription = "Selected",
                             tint = MaterialTheme.colorScheme.primary,
                             modifier = Modifier
-                                .padding(start = EasyReaderSpacing.xs)
+                                .padding(start = RapunzelSpacing.xs)
                                 .size(22.dp)
                         )
                     } else if (onDelete != null || onResetProgress != null || onMarkFinished != null) {
@@ -356,7 +356,7 @@ fun LibraryItemCard(
                 
                 // Download status indicator (if applicable)
                 if (item.isDownloading) {
-                    Spacer(modifier = Modifier.height(EasyReaderSpacing.xs))
+                    Spacer(modifier = Modifier.height(RapunzelSpacing.xs))
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(6.dp)
@@ -386,8 +386,8 @@ fun LibraryItemCardPreview() {
     Column(
         modifier = Modifier
             .background(Color.Black)
-            .padding(EasyReaderSpacing.md),
-        verticalArrangement = Arrangement.spacedBy(EasyReaderSpacing.sm)
+            .padding(RapunzelSpacing.md),
+        verticalArrangement = Arrangement.spacedBy(RapunzelSpacing.sm)
     ) {
         LibraryItemCard(
             item = LibraryItem(

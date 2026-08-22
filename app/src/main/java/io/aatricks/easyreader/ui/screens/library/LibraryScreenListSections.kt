@@ -78,8 +78,8 @@ import io.aatricks.easyreader.ui.screens.library.LibraryRenderItem
 import io.aatricks.easyreader.ui.screens.library.flattenLibraryItems
 import io.aatricks.easyreader.ui.screens.library.novelChapterRow
 import io.aatricks.easyreader.ui.screens.library.selectableClickBox
-import io.aatricks.easyreader.ui.theme.EasyReaderMotion
-import io.aatricks.easyreader.ui.theme.EasyReaderSpacing
+import io.aatricks.easyreader.ui.theme.RapunzelMotion
+import io.aatricks.easyreader.ui.theme.RapunzelSpacing
 import io.aatricks.easyreader.ui.viewmodel.LibraryViewModel
 import io.aatricks.easyreader.ui.viewmodel.ReaderViewModel
 import io.aatricks.easyreader.ui.viewmodel.SummaryViewModel
@@ -124,8 +124,8 @@ internal fun LibraryItemList(
 
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
-        contentPadding = PaddingValues(top = EasyReaderSpacing.xs, bottom = EasyReaderSpacing.xl),
-        verticalArrangement = Arrangement.spacedBy(EasyReaderSpacing.sm)
+        contentPadding = PaddingValues(top = RapunzelSpacing.xs, bottom = RapunzelSpacing.xl),
+        verticalArrangement = Arrangement.spacedBy(RapunzelSpacing.sm)
     ) {
         items(
             items = renderItems,
@@ -202,7 +202,7 @@ private fun SourceHeader(
         modifier = Modifier
             .fillMaxWidth()
             .clickable(onClick = onClick)
-            .padding(vertical = EasyReaderSpacing.xs, horizontal = EasyReaderSpacing.xxs),
+            .padding(vertical = RapunzelSpacing.xs, horizontal = RapunzelSpacing.xxs),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(
@@ -226,7 +226,7 @@ private fun novelResumeButton(item: LibraryItem, onClick: () -> Unit) {
         onClick = onClick,
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = EasyReaderSpacing.sm),
+            .padding(horizontal = RapunzelSpacing.sm),
         colors = ButtonDefaults.buttonColors(
             containerColor = MaterialTheme.colorScheme.primaryContainer,
             contentColor = MaterialTheme.colorScheme.onPrimaryContainer
@@ -281,7 +281,7 @@ private fun novelGroupCard(
             }
         )
     ) {
-        Column(modifier = Modifier.padding(EasyReaderSpacing.sm)) {
+        Column(modifier = Modifier.padding(RapunzelSpacing.sm)) {
             NovelGroupHeader(
                 title = title,
                 items = items,
@@ -339,7 +339,7 @@ private fun NovelGroupHeader(
 
     Row(
         modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(EasyReaderSpacing.xs),
+        horizontalArrangement = Arrangement.spacedBy(RapunzelSpacing.xs),
         verticalAlignment = Alignment.Top
     ) {
         if (isSelectionMode) {
@@ -372,7 +372,7 @@ private fun NovelGroupHeader(
                             .clip(MaterialTheme.shapes.small),
                         contentScale = ContentScale.Crop
                     )
-                    Spacer(modifier = Modifier.width(EasyReaderSpacing.sm))
+                    Spacer(modifier = Modifier.width(RapunzelSpacing.sm))
                 }
             Column(modifier = Modifier.weight(1f)) {
                 Text(
@@ -383,7 +383,7 @@ private fun NovelGroupHeader(
                     overflow = TextOverflow.Ellipsis
                 )
                 if (!isExpanded) {
-                    Spacer(modifier = Modifier.height(EasyReaderSpacing.xxs))
+                    Spacer(modifier = Modifier.height(RapunzelSpacing.xxs))
                     Text(
                         text = getLibraryItemResumeLabel(resumeItem),
                         style = MaterialTheme.typography.bodySmall,
@@ -394,7 +394,7 @@ private fun NovelGroupHeader(
                         }
                     )
                     if (resumeItem.isCurrentlyReading) {
-                        Spacer(modifier = Modifier.height(EasyReaderSpacing.xxs))
+                        Spacer(modifier = Modifier.height(RapunzelSpacing.xxs))
                         LinearProgressIndicator(
                             progress = { readerUiState.scrollProgress / 100f },
                             modifier = Modifier.fillMaxWidth(),
@@ -404,7 +404,7 @@ private fun NovelGroupHeader(
                     }
                 }
                 if (!isSelectionMode && updateItem != null) {
-                    Spacer(modifier = Modifier.height(EasyReaderSpacing.xxs))
+                    Spacer(modifier = Modifier.height(RapunzelSpacing.xxs))
                     AssistChip(
                         onClick = { onOpenNewChapter(updateItem) },
                         label = { Text("Open latest") }

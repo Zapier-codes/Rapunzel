@@ -45,8 +45,8 @@ import io.aatricks.easyreader.data.model.LibraryItem
 import io.aatricks.easyreader.ui.components.ChapterSummaryDropdown
 import io.aatricks.easyreader.ui.screens.LibraryRenderContext
 import io.aatricks.easyreader.ui.screens.openLibraryChapter
-import io.aatricks.easyreader.ui.theme.EasyReaderMotion
-import io.aatricks.easyreader.ui.theme.EasyReaderSpacing
+import io.aatricks.easyreader.ui.theme.RapunzelMotion
+import io.aatricks.easyreader.ui.theme.RapunzelSpacing
 import kotlinx.coroutines.launch
 
 private const val SELECTED_ROW_ALPHA = 0.26f
@@ -97,7 +97,7 @@ internal fun selectableClickBox(
 @Composable
 internal fun novelChapterRow(renderItem: LibraryRenderItem.ChapterRow, context: LibraryRenderContext) {
     val scope = rememberCoroutineScope()
-    Spacer(modifier = Modifier.height(EasyReaderSpacing.xs))
+    Spacer(modifier = Modifier.height(RapunzelSpacing.xs))
     val presentation = ChapterRowPresentation(
         renderItem = renderItem,
         chapterUrl = renderItem.item.currentChapterUrl.ifBlank { renderItem.item.url },
@@ -106,7 +106,7 @@ internal fun novelChapterRow(renderItem: LibraryRenderItem.ChapterRow, context: 
     )
     val rowColor by animateColorAsState(
         targetValue = chapterRowColor(presentation),
-        animationSpec = tween(EasyReaderMotion.short),
+        animationSpec = tween(RapunzelMotion.short),
         label = "chapterRowColor"
     )
     Column(modifier = Modifier.fillMaxWidth()) {
@@ -137,9 +137,9 @@ private fun chapterRowSurface(
     ) {
         Surface(modifier = Modifier.fillMaxWidth(), color = rowColor, shape = MaterialTheme.shapes.medium) {
             Row(
-                modifier = Modifier.fillMaxWidth().padding(EasyReaderSpacing.xs),
+                modifier = Modifier.fillMaxWidth().padding(RapunzelSpacing.xs),
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(EasyReaderSpacing.xs)
+                horizontalArrangement = Arrangement.spacedBy(RapunzelSpacing.xs)
             ) {
                 if (context.uiState.isSelectionMode) {
                     Checkbox(
@@ -165,7 +165,7 @@ private fun chapterRowTitle(presentation: ChapterRowPresentation, modifier: Modi
                     tint = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.size(DOWNLOADED_ICON_SIZE_DP.dp)
                 )
-                Spacer(modifier = Modifier.width(EasyReaderSpacing.xxs))
+                Spacer(modifier = Modifier.width(RapunzelSpacing.xxs))
             }
             Text(
                 text = presentation.item.currentChapter.ifBlank { "Chapter 1" },
@@ -221,10 +221,10 @@ private fun chapterSummary(
     val displayedSummary = if (activeChapterUrl == presentation.chapterUrl) currentSummary else cachedSummary
     AnimatedVisibility(
         visible = presentation.renderItem.isSummaryExpanded,
-        enter = expandVertically(animationSpec = tween(EasyReaderMotion.medium)) +
-            fadeIn(animationSpec = tween(EasyReaderMotion.short)),
-        exit = shrinkVertically(animationSpec = tween(EasyReaderMotion.short)) +
-            fadeOut(animationSpec = tween(EasyReaderMotion.short))
+        enter = expandVertically(animationSpec = tween(RapunzelMotion.medium)) +
+            fadeIn(animationSpec = tween(RapunzelMotion.short)),
+        exit = shrinkVertically(animationSpec = tween(RapunzelMotion.short)) +
+            fadeOut(animationSpec = tween(RapunzelMotion.short))
     ) {
         ChapterSummaryDropdown(
             summary = displayedSummary,
@@ -236,7 +236,7 @@ private fun chapterSummary(
             isReady = context.summaryViewModel.isServiceReady(),
             onGenerateSummary = onGenerate,
             onCancel = { context.summaryViewModel.cancelGeneration() },
-            modifier = Modifier.padding(top = EasyReaderSpacing.xxs)
+            modifier = Modifier.padding(top = RapunzelSpacing.xxs)
         )
     }
 }

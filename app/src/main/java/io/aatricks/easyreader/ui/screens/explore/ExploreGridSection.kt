@@ -60,7 +60,7 @@ import coil3.request.ImageRequest
 import coil3.request.crossfade
 import io.aatricks.easyreader.data.model.ExploreItem
 import io.aatricks.easyreader.ui.components.ErrorTile
-import io.aatricks.easyreader.ui.theme.EasyReaderSpacing
+import io.aatricks.easyreader.ui.theme.RapunzelSpacing
 import io.aatricks.easyreader.ui.viewmodel.ExploreViewModel
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -82,9 +82,9 @@ internal fun ExploreGrid(
             state = gridState,
             modifier = Modifier.fillMaxSize(),
             columns = GridCells.Adaptive(minSize = 156.dp),
-            contentPadding = PaddingValues(bottom = EasyReaderSpacing.sm),
-            horizontalArrangement = Arrangement.spacedBy(EasyReaderSpacing.sm),
-            verticalArrangement = Arrangement.spacedBy(EasyReaderSpacing.md)
+            contentPadding = PaddingValues(bottom = RapunzelSpacing.sm),
+            horizontalArrangement = Arrangement.spacedBy(RapunzelSpacing.sm),
+            verticalArrangement = Arrangement.spacedBy(RapunzelSpacing.md)
         ) {
             if (uiState.searchFailures.isNotEmpty()) {
                 items(uiState.searchFailures, span = { GridItemSpan(maxLineSpan) }) { failure ->
@@ -109,7 +109,7 @@ internal fun ExploreGrid(
                             ErrorTile(
                                 message = "Offline or failed to fetch results. Check your connection.",
                                 onRetry = { onRetryFailedSource("") },
-                                modifier = Modifier.padding(top = EasyReaderSpacing.xxl)
+                                modifier = Modifier.padding(top = RapunzelSpacing.xxl)
                             )
                         } else {
                             EmptyExploreState(
@@ -176,14 +176,14 @@ private fun EmptyExploreState(
     Surface(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(top = EasyReaderSpacing.xxl),
+            .padding(top = RapunzelSpacing.xxl),
         shape = MaterialTheme.shapes.extraLarge,
         color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.22f)
     ) {
         Column(
-            modifier = Modifier.padding(horizontal = EasyReaderSpacing.lg, vertical = EasyReaderSpacing.xl),
+            modifier = Modifier.padding(horizontal = RapunzelSpacing.lg, vertical = RapunzelSpacing.xl),
             horizontalAlignment = Alignment.Start,
-            verticalArrangement = Arrangement.spacedBy(EasyReaderSpacing.xs)
+            verticalArrangement = Arrangement.spacedBy(RapunzelSpacing.xs)
         ) {
             Text(
                 text = if (query.isNotBlank()) "No matches for \"$query\"" else "Nothing to show yet",
@@ -200,7 +200,7 @@ private fun EmptyExploreState(
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
             if (hasActiveFilters) {
-                Spacer(modifier = Modifier.height(EasyReaderSpacing.xxs))
+                Spacer(modifier = Modifier.height(RapunzelSpacing.xxs))
                 androidx.compose.material3.OutlinedButton(onClick = onClearFilters) {
                     Text("Clear filters")
                 }
@@ -225,8 +225,8 @@ private fun FeaturedExploreCard(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(220.dp)
-                .padding(EasyReaderSpacing.lg),
-            horizontalArrangement = Arrangement.spacedBy(EasyReaderSpacing.lg)
+                .padding(RapunzelSpacing.lg),
+            horizontalArrangement = Arrangement.spacedBy(RapunzelSpacing.lg)
         ) {
             Column(
                 modifier = Modifier
@@ -234,7 +234,7 @@ private fun FeaturedExploreCard(
                     .fillMaxHeight(),
                 verticalArrangement = Arrangement.SpaceBetween
             ) {
-                Column(verticalArrangement = Arrangement.spacedBy(EasyReaderSpacing.xs)) {
+                Column(verticalArrangement = Arrangement.spacedBy(RapunzelSpacing.xs)) {
                     Text(
                         text = "Popular on ${item.source}",
                         style = MaterialTheme.typography.labelLarge,
@@ -256,7 +256,7 @@ private fun FeaturedExploreCard(
                     )
                 }
 
-                Row(horizontalArrangement = Arrangement.spacedBy(EasyReaderSpacing.xs)) {
+                Row(horizontalArrangement = Arrangement.spacedBy(RapunzelSpacing.xs)) {
                     MetaPill(text = item.source)
                     if (item.chapterCount > 0) {
                         MetaPill(text = "${item.chapterCount} ch")
@@ -300,20 +300,20 @@ fun ExploreItemCard(
                     contentDescription = item.title,
                     modifier = Modifier
                         .fillMaxSize()
-                        .clip(RoundedCornerShape(topStart = EasyReaderSpacing.lg, topEnd = EasyReaderSpacing.lg)),
+                        .clip(RoundedCornerShape(topStart = RapunzelSpacing.lg, topEnd = RapunzelSpacing.lg)),
                     contentScale = ContentScale.Crop
                 )
 
                 Surface(
                     modifier = Modifier
                         .align(Alignment.TopStart)
-                        .padding(EasyReaderSpacing.xs),
+                        .padding(RapunzelSpacing.xs),
                     shape = RoundedCornerShape(14.dp),
                     color = MaterialTheme.colorScheme.scrim.copy(alpha = 0.7f)
                 ) {
                     Text(
                         text = item.source,
-                        modifier = Modifier.padding(horizontal = EasyReaderSpacing.xs, vertical = EasyReaderSpacing.xxs),
+                        modifier = Modifier.padding(horizontal = RapunzelSpacing.xs, vertical = RapunzelSpacing.xxs),
                         style = MaterialTheme.typography.labelSmall,
                         color = Color.White
                     )
@@ -323,8 +323,8 @@ fun ExploreItemCard(
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = EasyReaderSpacing.sm, vertical = EasyReaderSpacing.sm),
-                verticalArrangement = Arrangement.spacedBy(EasyReaderSpacing.xxs)
+                    .padding(horizontal = RapunzelSpacing.sm, vertical = RapunzelSpacing.sm),
+                verticalArrangement = Arrangement.spacedBy(RapunzelSpacing.xxs)
             ) {
                 Text(
                     text = item.title,
@@ -350,9 +350,9 @@ private fun EndOfResultsMarker(): Unit {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = EasyReaderSpacing.lg),
+            .padding(vertical = RapunzelSpacing.lg),
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(EasyReaderSpacing.sm)
+        horizontalArrangement = Arrangement.spacedBy(RapunzelSpacing.sm)
     ) {
         HorizontalDivider(
             modifier = Modifier.weight(1f),
@@ -378,7 +378,7 @@ internal fun MetaPill(text: String): Unit {
     ) {
         Text(
             text = text,
-            modifier = Modifier.padding(horizontal = EasyReaderSpacing.xs, vertical = EasyReaderSpacing.xxs),
+            modifier = Modifier.padding(horizontal = RapunzelSpacing.xs, vertical = RapunzelSpacing.xxs),
             style = MaterialTheme.typography.labelSmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
@@ -409,8 +409,8 @@ fun SkeletonExploreCard(): Unit {
                     .aspectRatio(0.78f)
             )
             Column(
-                modifier = Modifier.padding(horizontal = EasyReaderSpacing.sm, vertical = EasyReaderSpacing.sm),
-                verticalArrangement = Arrangement.spacedBy(EasyReaderSpacing.xs)
+                modifier = Modifier.padding(horizontal = RapunzelSpacing.sm, vertical = RapunzelSpacing.sm),
+                verticalArrangement = Arrangement.spacedBy(RapunzelSpacing.xs)
             ) {
                 Box(
                     modifier = Modifier
@@ -452,8 +452,8 @@ private fun SkeletonFeaturedExploreCard(): Unit {
             modifier = Modifier
                 .fillMaxWidth()
                 .height(220.dp)
-                .padding(EasyReaderSpacing.lg),
-            horizontalArrangement = Arrangement.spacedBy(EasyReaderSpacing.lg)
+                .padding(RapunzelSpacing.lg),
+            horizontalArrangement = Arrangement.spacedBy(RapunzelSpacing.lg)
         ) {
             Column(
                 modifier = Modifier
@@ -461,7 +461,7 @@ private fun SkeletonFeaturedExploreCard(): Unit {
                     .fillMaxHeight(),
                 verticalArrangement = Arrangement.SpaceBetween
             ) {
-                Column(verticalArrangement = Arrangement.spacedBy(EasyReaderSpacing.xs)) {
+                Column(verticalArrangement = Arrangement.spacedBy(RapunzelSpacing.xs)) {
                     Box(
                         modifier = Modifier
                             .width(92.dp)
@@ -485,7 +485,7 @@ private fun SkeletonFeaturedExploreCard(): Unit {
                     )
                 }
 
-                Row(horizontalArrangement = Arrangement.spacedBy(EasyReaderSpacing.xs)) {
+                Row(horizontalArrangement = Arrangement.spacedBy(RapunzelSpacing.xs)) {
                     repeat(2) {
                         Box(
                             modifier = Modifier

@@ -23,7 +23,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import io.aatricks.easyreader.data.model.LibraryItem
-import io.aatricks.easyreader.ui.theme.EasyReaderSpacing
+import io.aatricks.easyreader.ui.theme.RapunzelSpacing
 import coil3.compose.AsyncImage
 import androidx.compose.ui.layout.ContentScale
 import io.aatricks.easyreader.ui.components.rememberLibraryCoverImageRequest
@@ -60,13 +60,13 @@ fun LibraryDrawerContent(
         modifier = Modifier
             .fillMaxHeight()
             .background(MaterialTheme.colorScheme.surface),
-        contentPadding = PaddingValues(horizontal = EasyReaderSpacing.lg, vertical = EasyReaderSpacing.xl),
-        verticalArrangement = Arrangement.spacedBy(EasyReaderSpacing.lg)
+        contentPadding = PaddingValues(horizontal = RapunzelSpacing.lg, vertical = RapunzelSpacing.xl),
+        verticalArrangement = Arrangement.spacedBy(RapunzelSpacing.lg)
     ) {
         item {
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(EasyReaderSpacing.xs)
+                horizontalArrangement = Arrangement.spacedBy(RapunzelSpacing.xs)
             ) {
                 FilledTonalButton(
                     onClick = {
@@ -102,7 +102,7 @@ fun LibraryDrawerContent(
                     contentDescription = null,
                     modifier = Modifier.size(18.dp)
                 )
-                Spacer(modifier = Modifier.width(EasyReaderSpacing.xs))
+                Spacer(modifier = Modifier.width(RapunzelSpacing.xs))
                 Text("Import file")
             }
         }
@@ -126,7 +126,7 @@ fun LibraryDrawerContent(
                                 trackColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)
                             )
                             if (unseenMilestones > 0) {
-                                Spacer(modifier = Modifier.width(EasyReaderSpacing.xs))
+                                Spacer(modifier = Modifier.width(RapunzelSpacing.xs))
                                 Box(
                                     modifier = Modifier
                                         .size(6.dp)
@@ -215,7 +215,7 @@ private fun ContinueReadingCard(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(EasyReaderSpacing.lg),
+                .padding(RapunzelSpacing.lg),
             verticalAlignment = Alignment.CenterVertically
         ) {
             if (item.coverImageUrl.isNotBlank()) {
@@ -229,11 +229,11 @@ private fun ContinueReadingCard(
                         .clip(MaterialTheme.shapes.small),
                     contentScale = ContentScale.Crop
                 )
-                Spacer(modifier = Modifier.width(EasyReaderSpacing.md))
+                Spacer(modifier = Modifier.width(RapunzelSpacing.md))
             }
             Column(
                 modifier = Modifier.weight(1f),
-                verticalArrangement = Arrangement.spacedBy(EasyReaderSpacing.sm)
+                verticalArrangement = Arrangement.spacedBy(RapunzelSpacing.sm)
             ) {
                 Text(
                     text = "Continue Reading",
@@ -267,7 +267,7 @@ private fun ContinueReadingCard(
 
 @Composable
 private fun DrawerSectionLabel(text: String): Unit {
-    Column(verticalArrangement = Arrangement.spacedBy(EasyReaderSpacing.xs)) {
+    Column(verticalArrangement = Arrangement.spacedBy(RapunzelSpacing.xs)) {
         HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
         Text(
             text = text,
@@ -291,7 +291,7 @@ private fun QuickLibraryItemCover(item: LibraryItem): Unit {
                 .clip(MaterialTheme.shapes.small),
             contentScale = ContentScale.Crop
         )
-        Spacer(modifier = Modifier.width(EasyReaderSpacing.md))
+        Spacer(modifier = Modifier.width(RapunzelSpacing.md))
     }
 }
 
@@ -313,13 +313,13 @@ private fun QuickLibraryItem(
                 .fillMaxWidth()
                 .clip(MaterialTheme.shapes.medium)
                 .clickable(onClick = onClick)
-                .padding(horizontal = EasyReaderSpacing.md, vertical = EasyReaderSpacing.sm),
+                .padding(horizontal = RapunzelSpacing.md, vertical = RapunzelSpacing.sm),
             verticalAlignment = Alignment.CenterVertically
         ) {
             QuickLibraryItemCover(item)
             Column(
                 modifier = Modifier.weight(1f),
-                verticalArrangement = Arrangement.spacedBy(EasyReaderSpacing.xxs)
+                verticalArrangement = Arrangement.spacedBy(RapunzelSpacing.xxs)
             ) {
                 Text(
                     text = item.baseTitle.ifBlank { item.title },
@@ -337,12 +337,12 @@ private fun QuickLibraryItem(
                 )
             }
             if (trailingLabel != null) {
-                Spacer(modifier = Modifier.width(EasyReaderSpacing.xs))
+                Spacer(modifier = Modifier.width(RapunzelSpacing.xs))
                 AssistChip(
                     onClick = onClick,
                     label = { Text(trailingLabel) }
                 )
-                Spacer(modifier = Modifier.width(EasyReaderSpacing.xs))
+                Spacer(modifier = Modifier.width(RapunzelSpacing.xs))
             }
             Icon(
                 imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
@@ -362,12 +362,12 @@ private fun EmptyQuickAccessState(): Unit {
         contentColor = MaterialTheme.colorScheme.onSurface
     ) {
         Column(
-            modifier = Modifier.padding(EasyReaderSpacing.lg),
-            verticalArrangement = Arrangement.spacedBy(EasyReaderSpacing.xs)
+            modifier = Modifier.padding(RapunzelSpacing.lg),
+            verticalArrangement = Arrangement.spacedBy(RapunzelSpacing.xs)
         ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(EasyReaderSpacing.xs)
+                horizontalArrangement = Arrangement.spacedBy(RapunzelSpacing.xs)
             ) {
                 Icon(
                     imageVector = Icons.Default.ArrowOutward,

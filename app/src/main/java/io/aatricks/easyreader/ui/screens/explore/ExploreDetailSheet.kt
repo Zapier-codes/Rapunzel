@@ -43,7 +43,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import io.aatricks.easyreader.data.model.ExploreItem
-import io.aatricks.easyreader.ui.theme.EasyReaderSpacing
+import io.aatricks.easyreader.ui.theme.RapunzelSpacing
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
@@ -60,13 +60,13 @@ fun ExploreItemDetailSheet(
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = EasyReaderSpacing.lg, vertical = EasyReaderSpacing.sm)
+            .padding(horizontal = RapunzelSpacing.lg, vertical = RapunzelSpacing.sm)
             .verticalScroll(rememberScrollState()),
-        verticalArrangement = Arrangement.spacedBy(EasyReaderSpacing.md)
+        verticalArrangement = Arrangement.spacedBy(RapunzelSpacing.md)
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(EasyReaderSpacing.md)
+            horizontalArrangement = Arrangement.spacedBy(RapunzelSpacing.md)
         ) {
             AsyncImage(
                 model = imageRequest,
@@ -80,7 +80,7 @@ fun ExploreItemDetailSheet(
 
             Column(
                 modifier = Modifier.weight(1f),
-                verticalArrangement = Arrangement.spacedBy(EasyReaderSpacing.xxs)
+                verticalArrangement = Arrangement.spacedBy(RapunzelSpacing.xxs)
             ) {
                 Text(
                     text = item.title,
@@ -90,7 +90,7 @@ fun ExploreItemDetailSheet(
                 if (isInLibrary) {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(EasyReaderSpacing.xxs)
+                        horizontalArrangement = Arrangement.spacedBy(RapunzelSpacing.xxs)
                     ) {
                         Icon(
                             imageVector = Icons.Default.CheckCircle,
@@ -117,7 +117,7 @@ fun ExploreItemDetailSheet(
                 if (item.chapterCount > 0) {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(EasyReaderSpacing.xxs)
+                        horizontalArrangement = Arrangement.spacedBy(RapunzelSpacing.xxs)
                     ) {
                         Icon(
                             imageVector = Icons.Default.AutoStories,
@@ -147,20 +147,20 @@ fun ExploreItemDetailSheet(
 
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(EasyReaderSpacing.sm)
+            horizontalArrangement = Arrangement.spacedBy(RapunzelSpacing.sm)
         ) {
             Button(
                 onClick = onRead,
                 modifier = Modifier.weight(1f),
                 shape = MaterialTheme.shapes.large,
-                contentPadding = PaddingValues(horizontal = EasyReaderSpacing.sm, vertical = EasyReaderSpacing.xs)
+                contentPadding = PaddingValues(horizontal = RapunzelSpacing.sm, vertical = RapunzelSpacing.xs)
             ) {
                 Icon(
                     imageVector = Icons.Default.PlayArrow,
                     contentDescription = null,
                     modifier = Modifier.size(20.dp)
                 )
-                Spacer(modifier = Modifier.width(EasyReaderSpacing.xs))
+                Spacer(modifier = Modifier.width(RapunzelSpacing.xs))
                 Text(if (isInLibrary) "Read now" else "Add and read")
             }
 
@@ -169,21 +169,21 @@ fun ExploreItemDetailSheet(
                     onClick = onAddToLibrary,
                     modifier = Modifier.weight(1f),
                     shape = MaterialTheme.shapes.large,
-                    contentPadding = PaddingValues(horizontal = EasyReaderSpacing.sm, vertical = EasyReaderSpacing.xs)
+                    contentPadding = PaddingValues(horizontal = RapunzelSpacing.sm, vertical = RapunzelSpacing.xs)
                 ) {
                     Icon(
                         imageVector = Icons.Default.Add,
                         contentDescription = null,
                         modifier = Modifier.size(18.dp)
                     )
-                    Spacer(modifier = Modifier.width(EasyReaderSpacing.xs))
+                    Spacer(modifier = Modifier.width(RapunzelSpacing.xs))
                     Text("Save")
                 }
             }
         }
 
         if (item.genres.isNotEmpty()) {
-            Column(verticalArrangement = Arrangement.spacedBy(EasyReaderSpacing.xs)) {
+            Column(verticalArrangement = Arrangement.spacedBy(RapunzelSpacing.xs)) {
                 Text(
                     text = "Genres",
                     style = MaterialTheme.typography.labelLarge,
@@ -191,8 +191,8 @@ fun ExploreItemDetailSheet(
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 FlowRow(
-                    horizontalArrangement = Arrangement.spacedBy(EasyReaderSpacing.xs),
-                    verticalArrangement = Arrangement.spacedBy(EasyReaderSpacing.xxs)
+                    horizontalArrangement = Arrangement.spacedBy(RapunzelSpacing.xs),
+                    verticalArrangement = Arrangement.spacedBy(RapunzelSpacing.xxs)
                 ) {
                     item.genres.forEach { tag ->
                         AssistChip(
@@ -209,7 +209,7 @@ fun ExploreItemDetailSheet(
 
         HorizontalDivider()
 
-        Column(verticalArrangement = Arrangement.spacedBy(EasyReaderSpacing.xs)) {
+        Column(verticalArrangement = Arrangement.spacedBy(RapunzelSpacing.xs)) {
             Text(
                 text = "About",
                 style = MaterialTheme.typography.titleMedium,
@@ -223,7 +223,7 @@ fun ExploreItemDetailSheet(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     CircularProgressIndicator(modifier = Modifier.size(22.dp), strokeWidth = 2.dp)
-                    Spacer(modifier = Modifier.width(EasyReaderSpacing.sm))
+                    Spacer(modifier = Modifier.width(RapunzelSpacing.sm))
                     Text(
                         text = "Loading details…",
                         style = MaterialTheme.typography.bodyMedium,
@@ -264,6 +264,6 @@ fun ExploreItemDetailSheet(
             }
         }
 
-        Spacer(modifier = Modifier.height(EasyReaderSpacing.lg))
+        Spacer(modifier = Modifier.height(RapunzelSpacing.lg))
     }
 }

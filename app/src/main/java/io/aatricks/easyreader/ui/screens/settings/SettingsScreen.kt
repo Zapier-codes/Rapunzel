@@ -59,7 +59,7 @@ import androidx.compose.ui.semantics.Role
 import io.aatricks.easyreader.ui.screens.countDistinctNovelTitles
 import androidx.hilt.navigation.compose.hiltViewModel
 import io.aatricks.easyreader.ui.theme.AccentTheme
-import io.aatricks.easyreader.ui.theme.EasyReaderSpacing
+import io.aatricks.easyreader.ui.theme.RapunzelSpacing
 import io.aatricks.easyreader.ui.viewmodel.BackupViewModel
 import io.aatricks.easyreader.ui.viewmodel.LibraryViewModel
 import io.aatricks.easyreader.ui.viewmodel.ReaderViewModel
@@ -78,6 +78,8 @@ fun SettingsScreen(
     readerViewModel: ReaderViewModel,
     libraryViewModel: LibraryViewModel,
     onNavigateBack: () -> Unit,
+    appName: String = "Rapunzel",
+    githubUrl: String = "https://github.com/Zapier-codes/Rapunzel",
     backupViewModel: BackupViewModel = hiltViewModel(),
     settingsViewModel: SettingsViewModel = hiltViewModel()
 ) {
@@ -147,7 +149,7 @@ fun SettingsScreen(
             if (err != null) {
                 snackbarHostState.showSnackbar("Error checking updates: $err")
             } else if (update == null) {
-                snackbarHostState.showSnackbar("Emaki is up to date (${updateState.currentVersion})")
+                snackbarHostState.showSnackbar("$appName is up to date (${updateState.currentVersion})")
             }
             userTriggeredCheck = false
         }
@@ -176,11 +178,11 @@ fun SettingsScreen(
                 .fillMaxSize()
                 .padding(paddingValues)
                 .verticalScroll(rememberScrollState())
-                .padding(horizontal = EasyReaderSpacing.md, vertical = EasyReaderSpacing.md),
-            verticalArrangement = Arrangement.spacedBy(EasyReaderSpacing.lg)
+                .padding(horizontal = RapunzelSpacing.md, vertical = RapunzelSpacing.md),
+            verticalArrangement = Arrangement.spacedBy(RapunzelSpacing.lg)
         ) {
             SettingsSection(title = "Appearance") {
-                Column(verticalArrangement = Arrangement.spacedBy(EasyReaderSpacing.xs)) {
+                Column(verticalArrangement = Arrangement.spacedBy(RapunzelSpacing.xs)) {
                     Text(
                         text = "Theme",
                         style = MaterialTheme.typography.bodyMedium,
@@ -188,7 +190,7 @@ fun SettingsScreen(
                     )
                     Row(
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(EasyReaderSpacing.xs)
+                        horizontalArrangement = Arrangement.spacedBy(RapunzelSpacing.xs)
                     ) {
                         val themes = listOf("SYSTEM" to "System", "LIGHT" to "Light", "DARK" to "Dark")
                         themes.forEach { (mode, label) ->
@@ -234,7 +236,7 @@ fun SettingsScreen(
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
-                        Spacer(modifier = Modifier.size(EasyReaderSpacing.sm))
+                        Spacer(modifier = Modifier.size(RapunzelSpacing.sm))
                         Switch(
                             checked = appearanceSettings.dynamicColor,
                             onCheckedChange = null
@@ -243,7 +245,7 @@ fun SettingsScreen(
                 }
 
                 val accentEnabled = !appearanceSettings.dynamicColor
-                Column(verticalArrangement = Arrangement.spacedBy(EasyReaderSpacing.xs)) {
+                Column(verticalArrangement = Arrangement.spacedBy(RapunzelSpacing.xs)) {
                     Text(
                         text = "Accent",
                         style = MaterialTheme.typography.bodyMedium,
@@ -257,7 +259,7 @@ fun SettingsScreen(
                         modifier = Modifier
                             .fillMaxWidth()
                             .horizontalScroll(rememberScrollState()),
-                        horizontalArrangement = Arrangement.spacedBy(EasyReaderSpacing.xs)
+                        horizontalArrangement = Arrangement.spacedBy(RapunzelSpacing.xs)
                     ) {
                         AccentTheme.entries.forEach { accentTheme ->
                             AccentThemeChip(
@@ -295,7 +297,7 @@ fun SettingsScreen(
                         contentDescription = null,
                         modifier = Modifier.size(18.dp)
                     )
-                    Spacer(modifier = Modifier.height(EasyReaderSpacing.xs))
+                    Spacer(modifier = Modifier.height(RapunzelSpacing.xs))
                     Text("Clear cached chapters and images")
                 }
                 SettingsRow(
@@ -312,7 +314,7 @@ fun SettingsScreen(
                         contentDescription = null,
                         modifier = Modifier.size(18.dp)
                     )
-                    Spacer(modifier = Modifier.height(EasyReaderSpacing.xs))
+                    Spacer(modifier = Modifier.height(RapunzelSpacing.xs))
                     Text("Clear all downloads")
                 }
                 val titlesCount = countDistinctNovelTitles(libraryState.items)
@@ -371,7 +373,7 @@ fun SettingsScreen(
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
-                        Spacer(modifier = Modifier.size(EasyReaderSpacing.sm))
+                        Spacer(modifier = Modifier.size(RapunzelSpacing.sm))
                         Switch(
                             checked = summaryUiState.isEnabled,
                             onCheckedChange = null
@@ -416,7 +418,7 @@ fun SettingsScreen(
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
-                    Spacer(modifier = Modifier.size(EasyReaderSpacing.sm))
+                    Spacer(modifier = Modifier.size(RapunzelSpacing.sm))
                     Switch(
                         checked = scrollEnabled,
                         onCheckedChange = null
@@ -474,7 +476,7 @@ fun SettingsScreen(
             HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
 
             SettingsSection(title = "About") {
-                SettingsRow(title = "App", subtitle = "Emaki (${updateState.currentVersion})")
+                SettingsRow(title = "App", subtitle = "$appName (${updateState.currentVersion})")
                 SettingsRow(title = "License", subtitle = "GPL-3.0")
 
                 Row(
@@ -495,12 +497,12 @@ fun SettingsScreen(
                             color = MaterialTheme.colorScheme.onSurface
                         )
                         Text(
-                            text = "Check once a day when Emaki opens",
+                            text = "Check once a day when $appName opens",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
-                    Spacer(modifier = Modifier.size(EasyReaderSpacing.sm))
+                    Spacer(modifier = Modifier.size(RapunzelSpacing.sm))
                     Switch(
                         checked = updateState.automaticUpdateChecksEnabled,
                         onCheckedChange = null
@@ -565,7 +567,7 @@ fun SettingsScreen(
                         runCatching {
                             val intent = android.content.Intent(
                                 android.content.Intent.ACTION_VIEW,
-                                android.net.Uri.parse("https://github.com/Aatricks/EasyReader")
+                                android.net.Uri.parse(githubUrl)
                             )
                             context.startActivity(intent)
                         }
@@ -576,7 +578,7 @@ fun SettingsScreen(
                         contentDescription = null,
                         modifier = Modifier.size(16.dp)
                     )
-                    Spacer(modifier = Modifier.height(EasyReaderSpacing.xs))
+                    Spacer(modifier = Modifier.height(RapunzelSpacing.xs))
                     Text("Open project on GitHub")
                 }
             }
@@ -765,7 +767,7 @@ private fun SettingsSection(
     title: String,
     content: @Composable () -> Unit
 ) {
-    Column(verticalArrangement = Arrangement.spacedBy(EasyReaderSpacing.sm)) {
+    Column(verticalArrangement = Arrangement.spacedBy(RapunzelSpacing.sm)) {
         Text(
             text = title,
             style = MaterialTheme.typography.labelLarge,
@@ -778,8 +780,8 @@ private fun SettingsSection(
             color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.22f)
         ) {
             Column(
-                modifier = Modifier.padding(horizontal = EasyReaderSpacing.md, vertical = EasyReaderSpacing.sm),
-                verticalArrangement = Arrangement.spacedBy(EasyReaderSpacing.sm)
+                modifier = Modifier.padding(horizontal = RapunzelSpacing.md, vertical = RapunzelSpacing.sm),
+                verticalArrangement = Arrangement.spacedBy(RapunzelSpacing.sm)
             ) {
                 content()
             }

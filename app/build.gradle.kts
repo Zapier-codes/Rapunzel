@@ -46,6 +46,8 @@ val rapunzelFeatWattpad = loadConfigProperty("rapunzel.feat.wattpad", "false") =
 val rapunzelFeatRoyalRoad = loadConfigProperty("rapunzel.feat.royalroad", "false") == "true"
 val rapunzelFeatInkitt = loadConfigProperty("rapunzel.feat.inkitt", "false") == "true"
 val rapunzelFeatAiRag = loadConfigProperty("rapunzel.feat.ai.rag", "false") == "true"
+val rapunzelGithubOwner = loadConfigProperty("rapunzel.github.owner", "Zapier-codes")
+val rapunzelGithubRepo = loadConfigProperty("rapunzel.github.repo", "Rapunzel")
 
 plugins {
     alias(libs.plugins.android.application)
@@ -113,6 +115,8 @@ android {
         buildConfigField("boolean", "FEATURE_ROYALROAD", "$rapunzelFeatRoyalRoad")
         buildConfigField("boolean", "FEATURE_INKITT", "$rapunzelFeatInkitt")
         buildConfigField("boolean", "FEATURE_AI_RAG", "$rapunzelFeatAiRag")
+        buildConfigField("String", "GITHUB_REPO_OWNER", "\"$rapunzelGithubOwner\"")
+        buildConfigField("String", "GITHUB_REPO_NAME", "\"$rapunzelGithubRepo\"")
 
         // Dynamic app name in resources so manifest and system UI pick it up automatically
         resValue("string", "app_name", rapunzelAppName)

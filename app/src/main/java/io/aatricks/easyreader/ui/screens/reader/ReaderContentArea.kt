@@ -47,7 +47,7 @@ import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import io.aatricks.easyreader.ui.theme.EasyReaderSpacing
+import io.aatricks.easyreader.ui.theme.RapunzelSpacing
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
@@ -1000,13 +1000,13 @@ private fun EdgeHintChip(
     icon: ImageVector
 ) {
     androidx.compose.material3.Surface(
-        modifier = Modifier.padding(vertical = EasyReaderSpacing.sm, horizontal = EasyReaderSpacing.md),
+        modifier = Modifier.padding(vertical = RapunzelSpacing.sm, horizontal = RapunzelSpacing.md),
         shape = androidx.compose.material3.MaterialTheme.shapes.extraLarge,
         color = androidx.compose.material3.MaterialTheme.colorScheme.surface.copy(alpha = 0.55f),
         contentColor = androidx.compose.material3.MaterialTheme.colorScheme.onSurface
     ) {
         androidx.compose.foundation.layout.Row(
-            modifier = Modifier.padding(horizontal = EasyReaderSpacing.sm, vertical = 6.dp),
+            modifier = Modifier.padding(horizontal = RapunzelSpacing.sm, vertical = 6.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(6.dp)
         ) {

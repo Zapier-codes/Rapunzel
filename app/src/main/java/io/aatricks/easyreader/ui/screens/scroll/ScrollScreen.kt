@@ -67,7 +67,7 @@ import coil3.compose.AsyncImage
 import io.aatricks.easyreader.data.model.MilestoneState
 import io.aatricks.easyreader.data.model.ScrollProgression
 import io.aatricks.easyreader.data.repository.FinishedSeriesData
-import io.aatricks.easyreader.ui.theme.EasyReaderSpacing
+import io.aatricks.easyreader.ui.theme.RapunzelSpacing
 import io.aatricks.easyreader.ui.viewmodel.ScrollViewModel
 
 // Strip geometry (SEGMENT/MOUNTING/ROLLER/HAIRLINE shared with the painting renderer)
@@ -216,9 +216,9 @@ private fun ScrollCanvasArea(
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
                     .padding(
-                        start = EasyReaderSpacing.lg,
-                        end = EasyReaderSpacing.lg,
-                        bottom = EasyReaderSpacing.xl
+                        start = RapunzelSpacing.lg,
+                        end = RapunzelSpacing.lg,
+                        bottom = RapunzelSpacing.xl
                     )
             )
     }
@@ -300,7 +300,7 @@ private fun RankEndCap(
         )
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             LevelMedallion(progression, palette)
-            Spacer(modifier = Modifier.height(EasyReaderSpacing.lg))
+            Spacer(modifier = Modifier.height(RapunzelSpacing.lg))
             Text(
                 text = progression.rankName,
                 style = MaterialTheme.typography.headlineMedium.copy(fontSize = RANK_TEXT_SP.sp),
@@ -310,7 +310,7 @@ private fun RankEndCap(
                 textAlign = TextAlign.Center,
                 color = palette.labelInk
             )
-            Spacer(modifier = Modifier.height(EasyReaderSpacing.sm))
+            Spacer(modifier = Modifier.height(RapunzelSpacing.sm))
             Text(
                 text = "${progression.xpToNextLevel} XP to level ${progression.level + 1}",
                 style = MaterialTheme.typography.labelMedium,
@@ -390,14 +390,14 @@ private fun StatsCard(
 ) {
     Surface(
         color = palette.frame.copy(alpha = STATS_CARD_ALPHA),
-        shape = RoundedCornerShape(EasyReaderSpacing.lg),
+        shape = RoundedCornerShape(RapunzelSpacing.lg),
         border = BorderStroke(HAIRLINE_DP.dp, palette.gold.copy(alpha = STATS_BORDER_ALPHA)),
         modifier = modifier.fillMaxWidth()
     ) {
         Row(
             modifier = Modifier.padding(
-                horizontal = EasyReaderSpacing.md,
-                vertical = EasyReaderSpacing.md
+                horizontal = RapunzelSpacing.md,
+                vertical = RapunzelSpacing.md
             ),
             horizontalArrangement = Arrangement.SpaceBetween
         ) {

@@ -71,7 +71,7 @@ private fun buildLightColorScheme(accentTheme: AccentTheme) = lightColorScheme(
 )
 
 @Composable
-fun NovelScraperTheme(
+fun RapunzelTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     dynamicColor: Boolean = false,
     accentTheme: AccentTheme = AccentTheme.MOSS,
@@ -99,7 +99,7 @@ fun NovelScraperTheme(
     MaterialTheme(
         colorScheme = colorScheme,
         typography = Typography,
-        shapes = EasyReaderShapes,
+        shapes = RapunzelShapes,
         content = content
     )
 }

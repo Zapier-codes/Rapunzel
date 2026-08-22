@@ -61,7 +61,7 @@ import io.aatricks.easyreader.R
 import io.aatricks.easyreader.data.model.ChapterInfo
 import io.aatricks.easyreader.data.model.PrefetchResult
 import io.aatricks.easyreader.data.model.isStrictOfflineReady
-import io.aatricks.easyreader.ui.theme.EasyReaderSpacing
+import io.aatricks.easyreader.ui.theme.RapunzelSpacing
 import io.aatricks.easyreader.ui.viewmodel.LibraryViewModel
 import io.aatricks.easyreader.ui.viewmodel.ReaderViewModel
 import io.aatricks.easyreader.util.normalizeChapterList
@@ -132,8 +132,8 @@ fun ChapterListSheet(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = EasyReaderSpacing.md, vertical = EasyReaderSpacing.sm),
-            verticalArrangement = Arrangement.spacedBy(EasyReaderSpacing.md)
+                .padding(horizontal = RapunzelSpacing.md, vertical = RapunzelSpacing.sm),
+            verticalArrangement = Arrangement.spacedBy(RapunzelSpacing.md)
         ) {
             if (isSelectionMode) {
                 Text(
@@ -147,7 +147,7 @@ fun ChapterListSheet(
             if (!isSelectionMode) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(EasyReaderSpacing.xs),
+                    horizontalArrangement = Arrangement.spacedBy(RapunzelSpacing.xs),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     AssistChip(
@@ -196,7 +196,7 @@ fun ChapterListSheet(
             } else {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(EasyReaderSpacing.xs)
+                    horizontalArrangement = Arrangement.spacedBy(RapunzelSpacing.xs)
                 ) {
                     FilledTonalButton(
                         onClick = {
@@ -234,7 +234,7 @@ fun ChapterListSheet(
                             },
                             modifier = Modifier.size(18.dp)
                         )
-                        Spacer(modifier = Modifier.width(EasyReaderSpacing.xxs))
+                        Spacer(modifier = Modifier.width(RapunzelSpacing.xxs))
                         Text(
                             text = if (isDeleteMode) stringResource(R.string.common_delete) else stringResource(R.string.download_button),
                             fontWeight = FontWeight.SemiBold
@@ -251,7 +251,7 @@ fun ChapterListSheet(
                             contentDescription = null,
                             modifier = Modifier.size(18.dp)
                         )
-                        Spacer(modifier = Modifier.width(EasyReaderSpacing.xxs))
+                        Spacer(modifier = Modifier.width(RapunzelSpacing.xxs))
                         Text(stringResource(R.string.common_cancel))
                     }
                 }
@@ -272,7 +272,7 @@ fun ChapterListSheet(
                     modifier = Modifier
                         .fillMaxWidth()
                         .heightIn(max = 450.dp),
-                    verticalArrangement = Arrangement.spacedBy(EasyReaderSpacing.xxs)
+                    verticalArrangement = Arrangement.spacedBy(RapunzelSpacing.xxs)
                 ) {
                     itemsIndexed(filteredChapters, key = { _, chapter -> chapter.url }) { index, chapter ->
                         val cacheState = cacheStates[chapter.url]
@@ -425,7 +425,7 @@ fun ChapterListSheet(
                 }
             }
 
-            Spacer(modifier = Modifier.height(EasyReaderSpacing.sm))
+            Spacer(modifier = Modifier.height(RapunzelSpacing.sm))
         }
     }
 

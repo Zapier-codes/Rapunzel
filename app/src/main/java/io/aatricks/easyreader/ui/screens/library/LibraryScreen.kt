@@ -44,8 +44,8 @@ import io.aatricks.easyreader.data.repository.ContentRepository
 import io.aatricks.easyreader.ui.ExploreRoute
 import io.aatricks.easyreader.ui.SettingsRoute
 import io.aatricks.easyreader.ui.components.ChapterSummaryDropdown
-import io.aatricks.easyreader.ui.theme.EasyReaderMotion
-import io.aatricks.easyreader.ui.theme.EasyReaderSpacing
+import io.aatricks.easyreader.ui.theme.RapunzelMotion
+import io.aatricks.easyreader.ui.theme.RapunzelSpacing
 import io.aatricks.easyreader.ui.viewmodel.LibraryViewModel
 import io.aatricks.easyreader.ui.viewmodel.ReaderViewModel
 import io.aatricks.easyreader.ui.viewmodel.SummaryViewModel
@@ -152,12 +152,12 @@ fun LibraryScreen(
                 .fillMaxSize()
                 .background(MaterialTheme.colorScheme.surface)
                 .padding(paddingValues)
-                .padding(horizontal = EasyReaderSpacing.md, vertical = EasyReaderSpacing.md)
+                .padding(horizontal = RapunzelSpacing.md, vertical = RapunzelSpacing.md)
         ) {
             AnimatedVisibility(
                 visible = isAddSectionVisible,
-                enter = expandVertically(animationSpec = tween(EasyReaderMotion.medium)) + fadeIn(animationSpec = tween(EasyReaderMotion.short)),
-                exit = shrinkVertically(animationSpec = tween(EasyReaderMotion.short)) + fadeOut(animationSpec = tween(EasyReaderMotion.short))
+                enter = expandVertically(animationSpec = tween(RapunzelMotion.medium)) + fadeIn(animationSpec = tween(RapunzelMotion.short)),
+                exit = shrinkVertically(animationSpec = tween(RapunzelMotion.short)) + fadeOut(animationSpec = tween(RapunzelMotion.short))
             ) {
                 AddNovelSection(
                     urlInput = urlInput,
@@ -175,7 +175,7 @@ fun LibraryScreen(
             }
 
             if (isAddSectionVisible) {
-                Spacer(modifier = Modifier.height(EasyReaderSpacing.sm))
+                Spacer(modifier = Modifier.height(RapunzelSpacing.sm))
             }
 
             SearchLibraryField(
@@ -184,7 +184,7 @@ fun LibraryScreen(
             )
 
             if (libraryUiState.items.isNotEmpty()) {
-                Spacer(modifier = Modifier.height(EasyReaderSpacing.xs))
+                Spacer(modifier = Modifier.height(RapunzelSpacing.xs))
                 LibraryStatusRow(
                     query = searchQuery,
                     totalCount = totalNovelCount,
@@ -200,11 +200,11 @@ fun LibraryScreen(
                     }
                 )
             } else {
-                Spacer(modifier = Modifier.height(EasyReaderSpacing.md))
+                Spacer(modifier = Modifier.height(RapunzelSpacing.md))
             }
 
             if (libraryUiState.isSelectionMode) {
-                Spacer(modifier = Modifier.height(EasyReaderSpacing.xs))
+                Spacer(modifier = Modifier.height(RapunzelSpacing.xs))
                 SelectionActions(
                     onDelete = { libraryViewModel.removeSelectedItems() },
                     onCancel = { libraryViewModel.clearSelection() }
@@ -212,7 +212,7 @@ fun LibraryScreen(
             }
 
             if (libraryUiState.items.isNotEmpty()) {
-                Spacer(modifier = Modifier.height(EasyReaderSpacing.xs))
+                Spacer(modifier = Modifier.height(RapunzelSpacing.xs))
                 ReadingStatusFilterRow(
                     selected = statusFilter,
                     counts = remember(libraryUiState.items) { computeStatusCounts(libraryUiState.items) },
@@ -220,7 +220,7 @@ fun LibraryScreen(
                 )
             }
 
-            Spacer(modifier = Modifier.height(EasyReaderSpacing.xs))
+            Spacer(modifier = Modifier.height(RapunzelSpacing.xs))
 
             if (libraryUiState.items.isEmpty()) {
                 EmptyLibraryState(
@@ -294,7 +294,7 @@ private fun ReadingStatusFilterRow(
         modifier = Modifier
             .fillMaxWidth()
             .horizontalScroll(rememberScrollState()),
-        horizontalArrangement = Arrangement.spacedBy(EasyReaderSpacing.xs)
+        horizontalArrangement = Arrangement.spacedBy(RapunzelSpacing.xs)
     ) {
         SeriesReadingStatus.entries.forEach { filter ->
             val count = counts[filter] ?: 0
@@ -331,19 +331,19 @@ private fun AddNovelSection(
         shape = MaterialTheme.shapes.large,
         color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.18f)
     ) {
-        Column(modifier = Modifier.padding(EasyReaderSpacing.md)) {
+        Column(modifier = Modifier.padding(RapunzelSpacing.md)) {
             Text(
                 text = "Add from the web or import a file",
                 style = MaterialTheme.typography.titleSmall,
                 color = MaterialTheme.colorScheme.onSurface
             )
-            Spacer(modifier = Modifier.height(EasyReaderSpacing.xs))
+            Spacer(modifier = Modifier.height(RapunzelSpacing.xs))
             Text(
                 text = "Paste a novel URL to add it now, or import a file from your device.",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
-            Spacer(modifier = Modifier.height(EasyReaderSpacing.sm))
+            Spacer(modifier = Modifier.height(RapunzelSpacing.sm))
 
             OutlinedTextField(
                 value = urlInput,
@@ -369,7 +369,7 @@ private fun AddNovelSection(
 
             val url = clipboardUrl
             if (url != null && urlInput.isBlank()) {
-                Spacer(modifier = Modifier.height(EasyReaderSpacing.xs))
+                Spacer(modifier = Modifier.height(RapunzelSpacing.xs))
                 AssistChip(
                     onClick = { onUrlChange(url) },
                     leadingIcon = {
@@ -388,11 +388,11 @@ private fun AddNovelSection(
                 )
             }
 
-            Spacer(modifier = Modifier.height(EasyReaderSpacing.sm))
+            Spacer(modifier = Modifier.height(RapunzelSpacing.sm))
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(EasyReaderSpacing.xs)
+                horizontalArrangement = Arrangement.spacedBy(RapunzelSpacing.xs)
             ) {
                 Button(
                     onClick = onAddClick,
@@ -404,7 +404,7 @@ private fun AddNovelSection(
                     shape = MaterialTheme.shapes.large
                 ) {
                     Icon(Icons.Filled.Add, contentDescription = null, modifier = Modifier.size(20.dp))
-                    Spacer(modifier = Modifier.width(EasyReaderSpacing.xs))
+                    Spacer(modifier = Modifier.width(RapunzelSpacing.xs))
                     Text("Add from web", fontWeight = FontWeight.SemiBold)
                 }
 
@@ -416,7 +416,7 @@ private fun AddNovelSection(
                     shape = MaterialTheme.shapes.large
                 ) {
                     Icon(Icons.Filled.FileOpen, contentDescription = null, modifier = Modifier.size(20.dp))
-                    Spacer(modifier = Modifier.width(EasyReaderSpacing.xs))
+                    Spacer(modifier = Modifier.width(RapunzelSpacing.xs))
                     Text("Import file", fontWeight = FontWeight.SemiBold)
                 }
             }
@@ -495,8 +495,8 @@ private fun SelectionActions(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(bottom = EasyReaderSpacing.sm),
-        horizontalArrangement = Arrangement.spacedBy(EasyReaderSpacing.xs)
+            .padding(bottom = RapunzelSpacing.sm),
+        horizontalArrangement = Arrangement.spacedBy(RapunzelSpacing.xs)
     ) {
         Button(
             onClick = onDelete,
@@ -510,7 +510,7 @@ private fun SelectionActions(
             shape = MaterialTheme.shapes.large
         ) {
             Icon(Icons.Filled.Delete, contentDescription = null, modifier = Modifier.size(20.dp))
-            Spacer(modifier = Modifier.width(EasyReaderSpacing.xs))
+            Spacer(modifier = Modifier.width(RapunzelSpacing.xs))
             Text("Delete selected", fontWeight = FontWeight.SemiBold)
         }
         Button(
@@ -525,7 +525,7 @@ private fun SelectionActions(
             shape = MaterialTheme.shapes.large
         ) {
             Icon(Icons.Filled.Close, contentDescription = null, modifier = Modifier.size(20.dp))
-            Spacer(modifier = Modifier.width(EasyReaderSpacing.xs))
+            Spacer(modifier = Modifier.width(RapunzelSpacing.xs))
             Text("Done selecting", fontWeight = FontWeight.SemiBold)
         }
     }
@@ -549,8 +549,8 @@ private fun EmptyLibraryState(
         ) {
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(EasyReaderSpacing.sm),
-                modifier = Modifier.padding(EasyReaderSpacing.xl)
+                verticalArrangement = Arrangement.spacedBy(RapunzelSpacing.sm),
+                modifier = Modifier.padding(RapunzelSpacing.xl)
             ) {
                 val icon = if (isFilteredEmpty) Icons.Filled.SearchOff else Icons.AutoMirrored.Filled.LibraryBooks
                 Icon(
@@ -576,14 +576,14 @@ private fun EmptyLibraryState(
                     textAlign = androidx.compose.ui.text.style.TextAlign.Center
                 )
                 if (isFilteredEmpty) {
-                    Spacer(modifier = Modifier.height(EasyReaderSpacing.xs))
+                    Spacer(modifier = Modifier.height(RapunzelSpacing.xs))
                     FilledTonalButton(onClick = onClearSearch) {
                         Text("Clear search")
                     }
                 } else {
-                    Spacer(modifier = Modifier.height(EasyReaderSpacing.xs))
+                    Spacer(modifier = Modifier.height(RapunzelSpacing.xs))
                     Row(
-                        horizontalArrangement = Arrangement.spacedBy(EasyReaderSpacing.sm)
+                        horizontalArrangement = Arrangement.spacedBy(RapunzelSpacing.sm)
                     ) {
                         Button(onClick = onBrowseSources) {
                             Text("Browse sources")
