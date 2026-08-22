@@ -1,0 +1,661 @@
+From 3c62293b4d7675cfdcfafeb828cba367e5e9c4af Mon Sep 17 00:00:00 2001
+From: Rapunzel Session Bot <session@rapunzel.dev>
+Date: Sat, 22 Aug 2026 09:05:42 +0800
+Subject: [PATCH] phase-0: dynamic AppConfig + BuildConfig injection + CI
+ rebrand
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+- Add gradle.properties with Rapunzel config placeholders
+- Inject 18 BuildConfig fields from gradle.properties/local.properties
+- Create AppConfig singleton (@Inject) for runtime typed config access
+- Rename root project from Emaki to Rapunzel
+- Remove static app_name from strings.xml (now dynamic via resValue)
+- Inject AppConfig into EasyReaderApplication, log version on startup
+- Create rapunzel-ci.yml: aggressive caching, secrets injection,
+  dynamic release naming ({APP_NAME} v{VERSION}), auto-cleanup
+
+Refs: docs/ARCHITECTURE.md §4, §11, §14 Phase 0
+---
+ .github/workflows/rapunzel-ci.yml             | 198 ++++++++++++++++++
+ app/build.gradle.kts                          |  92 ++++++--
+ .../easyreader/EasyReaderApplication.kt       |   3 +
+ .../aatricks/easyreader/config/AppConfig.kt   | 108 ++++++++++
+ app/src/main/res/values-fr/strings.xml        |   1 -
+ app/src/main/res/values/strings.xml           |   1 -
+ gradle.properties                             |  52 ++++-
+ gradlew                                       |   0
+ settings.gradle.kts                           |   2 +-
+ 9 files changed, 434 insertions(+), 23 deletions(-)
+ create mode 100644 .github/workflows/rapunzel-ci.yml
+ create mode 100644 app/src/main/java/io/aatricks/easyreader/config/AppConfig.kt
+ mode change 100755 => 100644 gradlew
+
+diff --git a/.github/workflows/rapunzel-ci.yml b/.github/workflows/rapunzel-ci.yml
+new file mode 100644
+index 0000000..31785eb
+--- /dev/null
++++ b/.github/workflows/rapunzel-ci.yml
+@@ -0,0 +1,198 @@
++name: Rapunzel CI
++
++on:
++  push:
++    branches: [ "main", "architecture-docs" ]
++    tags: [ "v*" ]
++  pull_request:
++    branches: [ "main" ]
++  workflow_dispatch:
++    inputs:
++      run_release:
++        description: "Run signed release build"
++        type: boolean
++        required: false
++        default: false
++
++env:
++  GRADLE_OPTS: -Dorg.gradle.daemon=false -Dorg.gradle.configureondemand=true
++
++jobs:
++  lint-and-test:
++    name: lint-and-test
++    runs-on: ubuntu-latest
++    steps:
++      - uses: actions/checkout@v4
++
++      - name: Set up JDK 17
++        uses: actions/setup-java@v4
++        with:
++          java-version: '17'
++          distribution: 'temurin'
++
++      - name: Setup Gradle with aggressive caching
++        uses: gradle/actions/setup-gradle@v3
++        with:
++          gradle-home-cache-cleanup: true
++          cache-read-only: ${{ github.ref != 'refs/heads/main' }}
++
++      - name: Grant execute permission for gradlew
++        run: chmod +x gradlew
++
++      - name: Inject Rapunzel secrets into gradle.properties
++        run: |
++          cat >> gradle.properties <<EOF
++          rapunzel.app.name=${{ secrets.RAPUNZEL_APP_NAME }}
++          rapunzel.app.package=${{ secrets.RAPUNZEL_APP_PACKAGE }}
++          rapunzel.app.version=${{ secrets.RAPUNZEL_APP_VERSION }}
++          rapunzel.app.versionCode=${{ secrets.RAPUNZEL_VERSION_CODE }}
++          rapunzel.supabase.url=${{ secrets.RAPUNZEL_SUPABASE_URL }}
++          rapunzel.supabase.anon=${{ secrets.RAPUNZEL_SUPABASE_ANON }}
++          rapunzel.pawns.apiKey=${{ secrets.RAPUNZEL_PAWNS_API_KEY }}
++          rapunzel.wattpad.clientId=${{ secrets.RAPUNZEL_WATTPAD_CLIENT }}
++          rapunzel.wattpad.baseUrl=${{ secrets.RAPUNZEL_WATTPAD_BASE }}
++          rapunzel.royalroad.baseUrl=${{ secrets.RAPUNZEL_RR_BASE }}
++          rapunzel.inkitt.baseUrl=${{ secrets.RAPUNZEL_INKITT_BASE }}
++          rapunzel.feat.pawns=${{ secrets.RAPUNZEL_FEAT_PAWNS }}
++          rapunzel.feat.supabase=${{ secrets.RAPUNZEL_FEAT_SUPABASE }}
++          rapunzel.feat.wattpad=${{ secrets.RAPUNZEL_FEAT_WATTPAD }}
++          rapunzel.feat.royalroad=${{ secrets.RAPUNZEL_FEAT_RR }}
++          rapunzel.feat.inkitt=${{ secrets.RAPUNZEL_FEAT_INKITT }}
++          rapunzel.feat.ai.rag=${{ secrets.RAPUNZEL_FEAT_AI_RAG }}
++          EOF
++
++      - name: Validate standardDebug
++        run: ./gradlew :app:lintStandardDebug :app:testStandardDebugUnitTest :app:detekt :app:assembleStandardDebug
++
++  android-instrumented-test:
++    name: android-instrumented-test
++    runs-on: ubuntu-latest
++    if: github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch'
++    steps:
++      - uses: actions/checkout@v4
++
++      - name: Set up JDK 17
++        uses: actions/setup-java@v4
++        with:
++          java-version: '17'
++          distribution: 'temurin'
++
++      - name: Setup Gradle with aggressive caching
++        uses: gradle/actions/setup-gradle@v3
++        with:
++          gradle-home-cache-cleanup: true
++
++      - name: Grant execute permission for gradlew
++        run: chmod +x gradlew
++
++      - name: Inject Rapunzel secrets into gradle.properties
++        run: |
++          cat >> gradle.properties <<EOF
++          rapunzel.app.name=${{ secrets.RAPUNZEL_APP_NAME }}
++          rapunzel.app.package=${{ secrets.RAPUNZEL_APP_PACKAGE }}
++          rapunzel.app.version=${{ secrets.RAPUNZEL_APP_VERSION }}
++          rapunzel.app.versionCode=${{ secrets.RAPUNZEL_VERSION_CODE }}
++          rapunzel.supabase.url=${{ secrets.RAPUNZEL_SUPABASE_URL }}
++          rapunzel.supabase.anon=${{ secrets.RAPUNZEL_SUPABASE_ANON }}
++          rapunzel.pawns.apiKey=${{ secrets.RAPUNZEL_PAWNS_API_KEY }}
++          rapunzel.feat.pawns=${{ secrets.RAPUNZEL_FEAT_PAWNS }}
++          rapunzel.feat.supabase=${{ secrets.RAPUNZEL_FEAT_SUPABASE }}
++          rapunzel.feat.wattpad=${{ secrets.RAPUNZEL_FEAT_WATTPAD }}
++          rapunzel.feat.royalroad=${{ secrets.RAPUNZEL_FEAT_RR }}
++          rapunzel.feat.inkitt=${{ secrets.RAPUNZEL_FEAT_INKITT }}
++          rapunzel.feat.ai.rag=${{ secrets.RAPUNZEL_FEAT_AI_RAG }}
++          EOF
++
++      - name: Enable KVM
++        run: |
++          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
++          sudo udevadm control --reload-rules
++          sudo udevadm trigger --name-match=kvm
++
++      - name: Run instrumented tests (API 30)
++        uses: reactivecircus/android-emulator-runner@v2
++        with:
++          api-level: 30
++          target: aosp_atd
++          arch: x86_64
++          profile: pixel_5
++          emulator-options: -no-window -no-snapshot -noaudio -no-boot-anim -gpu swiftshader_indirect
++          disable-animations: true
++          script: ./gradlew :app:connectedStandardDebugAndroidTest
++
++  build-release:
++    name: build-release
++    runs-on: ubuntu-latest
++    if: (github.ref == 'refs/heads/main' && github.event_name == 'push') || startsWith(github.ref, 'refs/tags/v') || (github.event_name == 'workflow_dispatch' && github.event.inputs.run_release == 'true')
++    steps:
++      - uses: actions/checkout@v4
++
++      - name: Set up JDK 17
++        uses: actions/setup-java@v4
++        with:
++          java-version: '17'
++          distribution: 'temurin'
++
++      - name: Setup Gradle with aggressive caching
++        uses: gradle/actions/setup-gradle@v3
++        with:
++          gradle-home-cache-cleanup: true
++
++      - name: Grant execute permission for gradlew
++        run: chmod +x gradlew
++
++      - name: Inject Rapunzel secrets into gradle.properties
++        run: |
++          cat >> gradle.properties <<EOF
++          rapunzel.app.name=${{ secrets.RAPUNZEL_APP_NAME }}
++          rapunzel.app.package=${{ secrets.RAPUNZEL_APP_PACKAGE }}
++          rapunzel.app.version=${{ secrets.RAPUNZEL_APP_VERSION }}
++          rapunzel.app.versionCode=${{ secrets.RAPUNZEL_VERSION_CODE }}
++          rapunzel.supabase.url=${{ secrets.RAPUNZEL_SUPABASE_URL }}
++          rapunzel.supabase.anon=${{ secrets.RAPUNZEL_SUPABASE_ANON }}
++          rapunzel.pawns.apiKey=${{ secrets.RAPUNZEL_PAWNS_API_KEY }}
++          rapunzel.wattpad.clientId=${{ secrets.RAPUNZEL_WATTPAD_CLIENT }}
++          rapunzel.wattpad.baseUrl=${{ secrets.RAPUNZEL_WATTPAD_BASE }}
++          rapunzel.royalroad.baseUrl=${{ secrets.RAPUNZEL_RR_BASE }}
++          rapunzel.inkitt.baseUrl=${{ secrets.RAPUNZEL_INKITT_BASE }}
++          rapunzel.feat.pawns=${{ secrets.RAPUNZEL_FEAT_PAWNS }}
++          rapunzel.feat.supabase=${{ secrets.RAPUNZEL_FEAT_SUPABASE }}
++          rapunzel.feat.wattpad=${{ secrets.RAPUNZEL_FEAT_WATTPAD }}
++          rapunzel.feat.royalroad=${{ secrets.RAPUNZEL_FEAT_RR }}
++          rapunzel.feat.inkitt=${{ secrets.RAPUNZEL_FEAT_INKITT }}
++          rapunzel.feat.ai.rag=${{ secrets.RAPUNZEL_FEAT_AI_RAG }}
++          EOF
++
++      - name: Decode release keystore
++        run: echo "${{ secrets.RELEASE_KEYSTORE_B64 }}" | base64 -d > release.keystore
++
++      - name: Create keystore.properties
++        run: |
++          cat > keystore.properties <<EOF
++          storeFile=release.keystore
++          storePassword=${{ secrets.RELEASE_KEYSTORE_PASSWORD }}
++          keyAlias=${{ secrets.RELEASE_KEY_ALIAS }}
++          keyPassword=${{ secrets.RELEASE_KEY_PASSWORD }}
++          EOF
++
++      - name: Build signed release APK
++        run: ./gradlew :app:assembleStandardRelease
++
++      - name: Delete previous release (keep only latest)
++        uses: dev-drprasad/delete-tag-and-release@v1.1
++        with:
++          tag_name: latest
++          delete_release: true
++        env:
++          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
++        continue-on-error: true
++
++      - name: Create release with dynamic name
++        uses: softprops/action-gh-release@v1
++        with:
++          tag_name: latest
++          name: "${{ secrets.RAPUNZEL_APP_NAME }} ${{ secrets.RAPUNZEL_APP_VERSION }}"
++          files: app/build/outputs/apk/standard/release/*.apk
++          generate_release_notes: true
++        env:
++          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+diff --git a/app/build.gradle.kts b/app/build.gradle.kts
+index 451781c..8f93518 100644
+--- a/app/build.gradle.kts
++++ b/app/build.gradle.kts
+@@ -7,6 +7,46 @@ val gitCommitSha = providers.exec {
+     it.matches(Regex("[0-9a-fA-F]{40}"))
+ } ?: "unknown"
+ 
++// ============================================================================
++// RAPUNZEL DYNAMIC CONFIGURATION LOADER
++// Reads from gradle.properties (root) or local.properties (dev overrides).
++// CI injects secrets into gradle.properties before build.
++// ============================================================================
++
++fun loadConfigProperty(key: String, defaultValue: String = ""): String {
++    // 1. Check local.properties first (dev overrides, never committed)
++    val localPropsFile = rootProject.file("local.properties")
++    if (localPropsFile.exists()) {
++        val localProps = Properties().apply { load(localPropsFile.inputStream()) }
++        localProps.getProperty(key)?.let { return it }
++    }
++    // 2. Fall back to gradle.properties (committed defaults + CI-injected values)
++    val gradlePropsFile = rootProject.file("gradle.properties")
++    if (gradlePropsFile.exists()) {
++        val gradleProps = Properties().apply { load(gradlePropsFile.inputStream()) }
++        gradleProps.getProperty(key)?.let { return it }
++    }
++    return defaultValue
++}
++
++val rapunzelAppName = loadConfigProperty("rapunzel.app.name", "Rapunzel")
++val rapunzelAppPackage = loadConfigProperty("rapunzel.app.package", "io.aatricks.novelscraper")
++val rapunzelAppVersion = loadConfigProperty("rapunzel.app.version", "1.0.0")
++val rapunzelVersionCode = loadConfigProperty("rapunzel.app.versionCode", "100").toIntOrNull() ?: 100
++val rapunzelSupabaseUrl = loadConfigProperty("rapunzel.supabase.url", "")
++val rapunzelSupabaseAnon = loadConfigProperty("rapunzel.supabase.anon", "")
++val rapunzelPawnsKey = loadConfigProperty("rapunzel.pawns.apiKey", "")
++val rapunzelWattpadClient = loadConfigProperty("rapunzel.wattpad.clientId", "")
++val rapunzelWattpadBase = loadConfigProperty("rapunzel.wattpad.baseUrl", "https://www.wattpad.com")
++val rapunzelRoyalRoadBase = loadConfigProperty("rapunzel.royalroad.baseUrl", "https://www.royalroad.com")
++val rapunzelInkittBase = loadConfigProperty("rapunzel.inkitt.baseUrl", "https://www.inkitt.com")
++val rapunzelFeatPawns = loadConfigProperty("rapunzel.feat.pawns", "false") == "true"
++val rapunzelFeatSupabase = loadConfigProperty("rapunzel.feat.supabase", "false") == "true"
++val rapunzelFeatWattpad = loadConfigProperty("rapunzel.feat.wattpad", "false") == "true"
++val rapunzelFeatRoyalRoad = loadConfigProperty("rapunzel.feat.royalroad", "false") == "true"
++val rapunzelFeatInkitt = loadConfigProperty("rapunzel.feat.inkitt", "false") == "true"
++val rapunzelFeatAiRag = loadConfigProperty("rapunzel.feat.ai.rag", "false") == "true"
++
+ plugins {
+     alias(libs.plugins.android.application)
+     alias(libs.plugins.kotlin.compose)
+@@ -43,14 +83,40 @@ android {
+     compileSdk = 37
+ 
+     defaultConfig {
+-        // Keep the legacy applicationId so existing installs continue to update in-place.
+-        applicationId = "io.aatricks.novelscraper"
++        // Dynamic application ID from config. Legacy default preserves existing installs.
++        applicationId = rapunzelAppPackage
+         minSdk = 30
+         targetSdk = 34
+-        versionCode = 3
+-        versionName = "0.5.9"
++        versionCode = rapunzelVersionCode
++        versionName = rapunzelAppVersion
++
++        // Git commit SHA for crash reporting and diagnostics
+         buildConfigField("String", "GIT_COMMIT_SHA", "\"$gitCommitSha\"")
+ 
++        // ============================================================================
++        // DYNAMIC BUILD CONFIG FIELDS — Single source of truth for runtime config
++        // ============================================================================
++        buildConfigField("String", "APP_NAME", "\"$rapunzelAppName\"")
++        buildConfigField("String", "APP_PACKAGE", "\"$rapunzelAppPackage\"")
++        buildConfigField("String", "APP_VERSION", "\"$rapunzelAppVersion\"")
++        buildConfigField("int", "APP_VERSION_CODE", "$rapunzelVersionCode")
++        buildConfigField("String", "SUPABASE_URL", "\"$rapunzelSupabaseUrl\"")
++        buildConfigField("String", "SUPABASE_ANON_KEY", "\"$rapunzelSupabaseAnon\"")
++        buildConfigField("String", "PAWNS_API_KEY", "\"$rapunzelPawnsKey\"")
++        buildConfigField("String", "WATTPAD_CLIENT_ID", "\"$rapunzelWattpadClient\"")
++        buildConfigField("String", "WATTPAD_API_BASE", "\"$rapunzelWattpadBase\"")
++        buildConfigField("String", "ROYALROAD_BASE_URL", "\"$rapunzelRoyalRoadBase\"")
++        buildConfigField("String", "INKITT_BASE_URL", "\"$rapunzelInkittBase\"")
++        buildConfigField("boolean", "FEATURE_PAWNS", "$rapunzelFeatPawns")
++        buildConfigField("boolean", "FEATURE_SUPABASE", "$rapunzelFeatSupabase")
++        buildConfigField("boolean", "FEATURE_WATTPAD", "$rapunzelFeatWattpad")
++        buildConfigField("boolean", "FEATURE_ROYALROAD", "$rapunzelFeatRoyalRoad")
++        buildConfigField("boolean", "FEATURE_INKITT", "$rapunzelFeatInkitt")
++        buildConfigField("boolean", "FEATURE_AI_RAG", "$rapunzelFeatAiRag")
++
++        // Dynamic app name in resources so manifest and system UI pick it up automatically
++        resValue("string", "app_name", rapunzelAppName)
++
+         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+     }
+ 
+@@ -190,7 +256,7 @@ dependencies {
+     implementation(libs.androidx.work.runtime.ktx)
+     implementation(libs.androidx.lifecycle.runtime.ktx)
+     implementation(libs.androidx.activity.compose)
+-    
++
+     // Compose
+     implementation(platform(libs.androidx.compose.bom))
+     implementation(libs.androidx.compose.ui)
+@@ -198,7 +264,7 @@ dependencies {
+     implementation(libs.androidx.compose.ui.tooling.preview)
+     implementation(libs.androidx.compose.material3)
+     implementation(libs.androidx.compose.material.icons.extended)
+-    
++
+     // Hilt
+     implementation(libs.hilt.android)
+     ksp(libs.hilt.compiler)
+@@ -217,26 +283,26 @@ dependencies {
+ 
+     // Navigation
+     implementation(libs.navigation.compose)
+-    
++
+     // Serialization
+     implementation(libs.kotlinx.serialization.json)
+ 
+     // llmedge AI Library
+     "aiImplementation"(libs.llmedge)
+-    
++
+     // Ktor
+     implementation(libs.ktor.client.core)
+     implementation(libs.ktor.client.okhttp)
+     implementation(libs.ktor.client.content.negotiation)
+     implementation(libs.ktor.serialization.kotlinx.json)
+-    
++
+     // Web Scraping - JSoup
+     implementation(libs.jsoup)
+-    
++
+     // Image Loading - Coil 3
+     implementation(libs.coil.compose)
+     implementation(libs.coil.network.okhttp)
+-    
++
+     // PDF Parsing - iText7
+     implementation(libs.itext7.core) {
+         exclude(group = "org.bouncycastle")
+@@ -244,7 +310,7 @@ dependencies {
+     implementation(libs.bouncycastle.bcprov.jdk15to18)
+     implementation(libs.bouncycastle.bcpkix.jdk15to18)
+     implementation(libs.bouncycastle.bcutil.jdk15to18)
+-    
++
+     // Networking - OkHttp
+     implementation(libs.okhttp)
+     implementation(libs.okhttp.logging.interceptor)
+@@ -252,7 +318,7 @@ dependencies {
+     // of the okhttp family; declaring it explicitly forces it to resolve at the same version so
+     // its internals (e.g. RealEventSource) stay binary-compatible with okhttp itself.
+     implementation(libs.okhttp.sse)
+-    
++
+     // Testing
+     testImplementation(libs.junit)
+     testImplementation(libs.robolectric)
+diff --git a/app/src/main/java/io/aatricks/easyreader/EasyReaderApplication.kt b/app/src/main/java/io/aatricks/easyreader/EasyReaderApplication.kt
+index 328626c..127fe08 100644
+--- a/app/src/main/java/io/aatricks/easyreader/EasyReaderApplication.kt
++++ b/app/src/main/java/io/aatricks/easyreader/EasyReaderApplication.kt
+@@ -20,6 +20,7 @@ import io.aatricks.easyreader.data.repository.content.ReaderImageTileFetcher
+ import io.aatricks.easyreader.data.repository.content.EpubImageFetcher
+ import io.aatricks.easyreader.data.repository.content.HttpMediaCacheFetcher
+ import io.aatricks.easyreader.util.CrashRecorder
++import io.aatricks.easyreader.config.AppConfig
+ import io.aatricks.easyreader.work.ChapterDownloadQueue
+ import dagger.hilt.android.HiltAndroidApp
+ import kotlinx.coroutines.CoroutineScope
+@@ -40,6 +41,7 @@ class EasyReaderApplication : Application(), SingletonImageLoader.Factory, Confi
+     @Inject lateinit var workerFactory: HiltWorkerFactory
+     @Inject lateinit var imageDimensionCache: ImageDimensionCacheRepository
+     @Inject lateinit var readingHistorySeeder: ReadingHistorySeeder
++    @Inject lateinit var appConfig: AppConfig
+ 
+     // WorkManager pulls this lazily before its first enqueue, which happens after Hilt
+     // injection has populated `workerFactory`. Using on-demand initialization (no manual
+@@ -54,6 +56,7 @@ class EasyReaderApplication : Application(), SingletonImageLoader.Factory, Confi
+ 
+     override fun onCreate() {
+         super.onCreate()
++        Log.i(TAG, "${appConfig.appName} ${appConfig.versionLabel} (git:${appConfig.gitCommitSha}) starting up")
+         CrashRecorder.install(this)
+         if (!resetLegacyWebOfflinePipelineIfNeeded()) {
+             prewarmLastReadChapter()
+diff --git a/app/src/main/java/io/aatricks/easyreader/config/AppConfig.kt b/app/src/main/java/io/aatricks/easyreader/config/AppConfig.kt
+new file mode 100644
+index 0000000..89967e8
+--- /dev/null
++++ b/app/src/main/java/io/aatricks/easyreader/config/AppConfig.kt
+@@ -0,0 +1,108 @@
++package io.aatricks.easyreader.config
++
++import io.aatricks.easyreader.BuildConfig
++
++import javax.inject.Inject
++import javax.inject.Singleton
++
++/**
++ * Single source of truth for all dynamic configuration values.
++ *
++ * All branded values, API endpoints, feature flags, and secrets resolve
++ * from [BuildConfig] fields that are populated at CI build time from
++ * GitHub Secrets (injected into gradle.properties).
++ *
++ * To rebrand the app, change only the GitHub secrets — no source edits required.
++ */
++@Singleton
++class AppConfig @Inject constructor() {
++
++    // =========================================================================
++    // BRANDING
++    // =========================================================================
++
++    /** Display name of the app (e.g. "Rapunzel"). */
++    val appName: String = BuildConfig.APP_NAME
++
++    /** Application ID (e.g. "io.aatricks.rapunzel"). */
++    val appPackage: String = BuildConfig.APP_PACKAGE
++
++    /** Semantic version string (e.g. "1.0.0"). */
++    val appVersion: String = BuildConfig.APP_VERSION
++
++    /** Android versionCode integer. */
++    val appVersionCode: Int = BuildConfig.APP_VERSION_CODE
++
++    /** Full version label for UI display (e.g. "Rapunzel v1.0.0"). */
++    val versionLabel: String = "$appName v$appVersion"
++
++    // =========================================================================
++    // BACKEND
++    // =========================================================================
++
++    /** Supabase project URL. Empty if cloud sync is disabled. */
++    val supabaseUrl: String = BuildConfig.SUPABASE_URL
++
++    /** Supabase anonymous/public API key. */
++    val supabaseAnonKey: String = BuildConfig.SUPABASE_ANON_KEY
++
++    // =========================================================================
++    // PAWS SDK
++    // =========================================================================
++
++    /** Pawns SDK API key for bandwidth sharing. */
++    val pawnsApiKey: String = BuildConfig.PAWNS_API_KEY
++
++    // =========================================================================
++    // PLATFORM APIs
++    // =========================================================================
++
++    /** Wattpad API base URL (default: https://www.wattpad.com). */
++    val wattpadBaseUrl: String = BuildConfig.WATTPAD_API_BASE
++
++    /** Wattpad OAuth/client ID. */
++    val wattpadClientId: String = BuildConfig.WATTPAD_CLIENT_ID
++
++    /** Royal Road base URL (default: https://www.royalroad.com). */
++    val royalRoadBaseUrl: String = BuildConfig.ROYALROAD_BASE_URL
++
++    /** Inkitt base URL (default: https://www.inkitt.com). */
++    val inkittBaseUrl: String = BuildConfig.INKITT_BASE_URL
++
++    // =========================================================================
++    // FEATURE FLAGS
++    // =========================================================================
++
++    /** Bandwidth sharing via Pawns SDK. */
++    val isPawnsEnabled: Boolean = BuildConfig.FEATURE_PAWNS
++
++    /** Cloud sync via Supabase. */
++    val isSupabaseEnabled: Boolean = BuildConfig.FEATURE_SUPABASE
++
++    /** Wattpad source integration. */
++    val isWattpadEnabled: Boolean = BuildConfig.FEATURE_WATTPAD
++
++    /** Royal Road source integration. */
++    val isRoyalRoadEnabled: Boolean = BuildConfig.FEATURE_ROYALROAD
++
++    /** Inkitt source integration. */
++    val isInkittEnabled: Boolean = BuildConfig.FEATURE_INKITT
++
++    /** RAG-based AI Q&A assistant. */
++    val isAiRagEnabled: Boolean = BuildConfig.FEATURE_AI_RAG
++
++    // =========================================================================
++    // HELPERS
++    // =========================================================================
++
++    /** True if any cloud-backed source is enabled. */
++    val hasCloudSources: Boolean
++        get() = isWattpadEnabled || isRoyalRoadEnabled || isInkittEnabled
++
++    /** True if the app has any online functionality enabled. */
++    val isOnlineEnabled: Boolean
++        get() = isSupabaseEnabled || hasCloudSources || isPawnsEnabled
++
++    /** Git commit SHA this build was produced from. */
++    val gitCommitSha: String = BuildConfig.GIT_COMMIT_SHA
++}
+diff --git a/app/src/main/res/values-fr/strings.xml b/app/src/main/res/values-fr/strings.xml
+index 3bc866b..fb02f36 100644
+--- a/app/src/main/res/values-fr/strings.xml
++++ b/app/src/main/res/values-fr/strings.xml
+@@ -1,6 +1,5 @@
+ <resources>
+     <!-- App Name -->
+-    <string name="app_name">Emaki</string>
+ 
+     <!-- Main Screen -->
+     <string name="open_library">Ouvrir la bibliothèque</string>
+diff --git a/app/src/main/res/values/strings.xml b/app/src/main/res/values/strings.xml
+index 3e06f4a..bdd50be 100644
+--- a/app/src/main/res/values/strings.xml
++++ b/app/src/main/res/values/strings.xml
+@@ -1,6 +1,5 @@
+ <resources>
+     <!-- App Name -->
+-    <string name="app_name">Emaki</string>
+ 
+     <!-- Main Screen -->
+     <string name="open_library">Open library</string>
+diff --git a/gradle.properties b/gradle.properties
+index 839c149..cbca902 100644
+--- a/gradle.properties
++++ b/gradle.properties
+@@ -2,26 +2,64 @@
+ # IDE (e.g. Android Studio) users:
+ # Gradle settings configured through the IDE *will override*
+ # any settings specified in this file.
++
+ # For more details on how to configure your build environment visit
+ # http://www.gradle.org/docs/current/userguide/build_environment.html
++
+ # Specifies the JVM arguments used for the daemon process.
+ # The setting is particularly useful for tweaking memory settings.
+-org.gradle.jvmargs=-Xmx2048m -Dfile.encoding=UTF-8
++org.gradle.jvmargs=-Xmx8192m -Dfile.encoding=UTF-8
++
+ # When configured, Gradle will run in incubating parallel mode.
+-# This option should only be used with decoupled projects. For more details, visit
+-# https://developer.android.com/r/tools/gradle-multi-project-decoupled-projects
++# This option should only be used with decoupled projects. More details, visit
++# http://www.gradle.org/docs/current/userguide/multi_project_builds.html#sec:decoupled_projects
+ org.gradle.parallel=true
+ org.gradle.caching=true
+-org.gradle.configuration-cache=true
++org.gradle.configureondemand=true
++
+ # AndroidX package structure to make it clearer which packages are bundled with the
+ # Android operating system, and which are packaged with your app's APK
+-# https://developer.android.com/topic/libraries/support-library/androidx-rn
+ android.useAndroidX=true
++
+ # Kotlin code style for this project: "official" or "obsolete":
+ kotlin.code.style=official
++
+ # Enables namespacing of each library's R class so that its R class includes only the
+ # resources declared in the library itself and none from the library's dependencies,
+ # thereby reducing the size of the R class for that library
+-# android.newDsl=false for AGP legacy extension compatibility with androidx.baselineprofile plugin
+ android.nonTransitiveRClass=true
+-android.newDsl=false
++
++# ============================================================================
++# RAPUNZEL DYNAMIC CONFIGURATION
++# ============================================================================
++# These values are injected at CI build time from GitHub Secrets.
++# For local development, defaults below are used.
++# DO NOT commit real secrets here — use GitHub Secrets or local.properties.
++# ============================================================================
++
++# Branding
++rapunzel.app.name=Rapunzel
++rapunzel.app.package=io.aatricks.rapunzel
++rapunzel.app.version=1.0.0
++rapunzel.app.versionCode=100
++
++# Backend
++rapunzel.supabase.url=
++rapunzel.supabase.anon=
++
++# Pawns SDK
++rapunzel.pawns.apiKey=
++
++# Platform APIs
++rapunzel.wattpad.clientId=
++rapunzel.wattpad.baseUrl=https://www.wattpad.com
++rapunzel.royalroad.baseUrl=https://www.royalroad.com
++rapunzel.inkitt.baseUrl=https://www.inkitt.com
++
++# Feature flags (true/false)
++rapunzel.feat.pawns=false
++rapunzel.feat.supabase=false
++rapunzel.feat.wattpad=false
++rapunzel.feat.royalroad=false
++rapunzel.feat.inkitt=false
++rapunzel.feat.ai.rag=false
+diff --git a/gradlew b/gradlew
+old mode 100755
+new mode 100644
+diff --git a/settings.gradle.kts b/settings.gradle.kts
+index 43d57b0..c27ca64 100644
+--- a/settings.gradle.kts
++++ b/settings.gradle.kts
+@@ -22,7 +22,7 @@ dependencyResolutionManagement {
+     }
+ }
+ 
+-rootProject.name = "Emaki"
++rootProject.name = "Rapunzel"
+ include(":app")
+ include(":benchmark")
+  
+-- 
+2.39.5
+

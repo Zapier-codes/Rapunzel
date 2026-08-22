@@ -1,0 +1,198 @@
+name: Rapunzel CI
+
+on:
+  push:
+    branches: [ "main", "architecture-docs" ]
+    tags: [ "v*" ]
+  pull_request:
+    branches: [ "main" ]
+  workflow_dispatch:
+    inputs:
+      run_release:
+        description: "Run signed release build"
+        type: boolean
+        required: false
+        default: false
+
+env:
+  GRADLE_OPTS: -Dorg.gradle.daemon=false -Dorg.gradle.configureondemand=true
+
+jobs:
+  lint-and-test:
+    name: lint-and-test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Setup Gradle with aggressive caching
+        uses: gradle/actions/setup-gradle@v3
+        with:
+          gradle-home-cache-cleanup: true
+          cache-read-only: ${{ github.ref != 'refs/heads/main' }}
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - name: Inject Rapunzel secrets into gradle.properties
+        run: |
+          cat >> gradle.properties <<EOF
+          rapunzel.app.name=${{ secrets.RAPUNZEL_APP_NAME }}
+          rapunzel.app.package=${{ secrets.RAPUNZEL_APP_PACKAGE }}
+          rapunzel.app.version=${{ secrets.RAPUNZEL_APP_VERSION }}
+          rapunzel.app.versionCode=${{ secrets.RAPUNZEL_VERSION_CODE }}
+          rapunzel.supabase.url=${{ secrets.RAPUNZEL_SUPABASE_URL }}
+          rapunzel.supabase.anon=${{ secrets.RAPUNZEL_SUPABASE_ANON }}
+          rapunzel.pawns.apiKey=${{ secrets.RAPUNZEL_PAWNS_API_KEY }}
+          rapunzel.wattpad.clientId=${{ secrets.RAPUNZEL_WATTPAD_CLIENT }}
+          rapunzel.wattpad.baseUrl=${{ secrets.RAPUNZEL_WATTPAD_BASE }}
+          rapunzel.royalroad.baseUrl=${{ secrets.RAPUNZEL_RR_BASE }}
+          rapunzel.inkitt.baseUrl=${{ secrets.RAPUNZEL_INKITT_BASE }}
+          rapunzel.feat.pawns=${{ secrets.RAPUNZEL_FEAT_PAWNS }}
+          rapunzel.feat.supabase=${{ secrets.RAPUNZEL_FEAT_SUPABASE }}
+          rapunzel.feat.wattpad=${{ secrets.RAPUNZEL_FEAT_WATTPAD }}
+          rapunzel.feat.royalroad=${{ secrets.RAPUNZEL_FEAT_RR }}
+          rapunzel.feat.inkitt=${{ secrets.RAPUNZEL_FEAT_INKITT }}
+          rapunzel.feat.ai.rag=${{ secrets.RAPUNZEL_FEAT_AI_RAG }}
+          EOF
+
+      - name: Validate standardDebug
+        run: ./gradlew :app:lintStandardDebug :app:testStandardDebugUnitTest :app:detekt :app:assembleStandardDebug
+
+  android-instrumented-test:
+    name: android-instrumented-test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Setup Gradle with aggressive caching
+        uses: gradle/actions/setup-gradle@v3
+        with:
+          gradle-home-cache-cleanup: true
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - name: Inject Rapunzel secrets into gradle.properties
+        run: |
+          cat >> gradle.properties <<EOF
+          rapunzel.app.name=${{ secrets.RAPUNZEL_APP_NAME }}
+          rapunzel.app.package=${{ secrets.RAPUNZEL_APP_PACKAGE }}
+          rapunzel.app.version=${{ secrets.RAPUNZEL_APP_VERSION }}
+          rapunzel.app.versionCode=${{ secrets.RAPUNZEL_VERSION_CODE }}
+          rapunzel.supabase.url=${{ secrets.RAPUNZEL_SUPABASE_URL }}
+          rapunzel.supabase.anon=${{ secrets.RAPUNZEL_SUPABASE_ANON }}
+          rapunzel.pawns.apiKey=${{ secrets.RAPUNZEL_PAWNS_API_KEY }}
+          rapunzel.feat.pawns=${{ secrets.RAPUNZEL_FEAT_PAWNS }}
+          rapunzel.feat.supabase=${{ secrets.RAPUNZEL_FEAT_SUPABASE }}
+          rapunzel.feat.wattpad=${{ secrets.RAPUNZEL_FEAT_WATTPAD }}
+          rapunzel.feat.royalroad=${{ secrets.RAPUNZEL_FEAT_RR }}
+          rapunzel.feat.inkitt=${{ secrets.RAPUNZEL_FEAT_INKITT }}
+          rapunzel.feat.ai.rag=${{ secrets.RAPUNZEL_FEAT_AI_RAG }}
+          EOF
+
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      - name: Run instrumented tests (API 30)
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 30
+          target: aosp_atd
+          arch: x86_64
+          profile: pixel_5
+          emulator-options: -no-window -no-snapshot -noaudio -no-boot-anim -gpu swiftshader_indirect
+          disable-animations: true
+          script: ./gradlew :app:connectedStandardDebugAndroidTest
+
+  build-release:
+    name: build-release
+    runs-on: ubuntu-latest
+    if: (github.ref == 'refs/heads/main' && github.event_name == 'push') || startsWith(github.ref, 'refs/tags/v') || (github.event_name == 'workflow_dispatch' && github.event.inputs.run_release == 'true')
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Setup Gradle with aggressive caching
+        uses: gradle/actions/setup-gradle@v3
+        with:
+          gradle-home-cache-cleanup: true
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - name: Inject Rapunzel secrets into gradle.properties
+        run: |
+          cat >> gradle.properties <<EOF
+          rapunzel.app.name=${{ secrets.RAPUNZEL_APP_NAME }}
+          rapunzel.app.package=${{ secrets.RAPUNZEL_APP_PACKAGE }}
+          rapunzel.app.version=${{ secrets.RAPUNZEL_APP_VERSION }}
+          rapunzel.app.versionCode=${{ secrets.RAPUNZEL_VERSION_CODE }}
+          rapunzel.supabase.url=${{ secrets.RAPUNZEL_SUPABASE_URL }}
+          rapunzel.supabase.anon=${{ secrets.RAPUNZEL_SUPABASE_ANON }}
+          rapunzel.pawns.apiKey=${{ secrets.RAPUNZEL_PAWNS_API_KEY }}
+          rapunzel.wattpad.clientId=${{ secrets.RAPUNZEL_WATTPAD_CLIENT }}
+          rapunzel.wattpad.baseUrl=${{ secrets.RAPUNZEL_WATTPAD_BASE }}
+          rapunzel.royalroad.baseUrl=${{ secrets.RAPUNZEL_RR_BASE }}
+          rapunzel.inkitt.baseUrl=${{ secrets.RAPUNZEL_INKITT_BASE }}
+          rapunzel.feat.pawns=${{ secrets.RAPUNZEL_FEAT_PAWNS }}
+          rapunzel.feat.supabase=${{ secrets.RAPUNZEL_FEAT_SUPABASE }}
+          rapunzel.feat.wattpad=${{ secrets.RAPUNZEL_FEAT_WATTPAD }}
+          rapunzel.feat.royalroad=${{ secrets.RAPUNZEL_FEAT_RR }}
+          rapunzel.feat.inkitt=${{ secrets.RAPUNZEL_FEAT_INKITT }}
+          rapunzel.feat.ai.rag=${{ secrets.RAPUNZEL_FEAT_AI_RAG }}
+          EOF
+
+      - name: Decode release keystore
+        run: echo "${{ secrets.RELEASE_KEYSTORE_B64 }}" | base64 -d > release.keystore
+
+      - name: Create keystore.properties
+        run: |
+          cat > keystore.properties <<EOF
+          storeFile=release.keystore
+          storePassword=${{ secrets.RELEASE_KEYSTORE_PASSWORD }}
+          keyAlias=${{ secrets.RELEASE_KEY_ALIAS }}
+          keyPassword=${{ secrets.RELEASE_KEY_PASSWORD }}
+          EOF
+
+      - name: Build signed release APK
+        run: ./gradlew :app:assembleStandardRelease
+
+      - name: Delete previous release (keep only latest)
+        uses: dev-drprasad/delete-tag-and-release@v1.1
+        with:
+          tag_name: latest
+          delete_release: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        continue-on-error: true
+
+      - name: Create release with dynamic name
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: latest
+          name: "${{ secrets.RAPUNZEL_APP_NAME }} ${{ secrets.RAPUNZEL_APP_VERSION }}"
+          files: app/build/outputs/apk/standard/release/*.apk
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

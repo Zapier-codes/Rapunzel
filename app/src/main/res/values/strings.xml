@@ -1,6 +1,5 @@
 <resources>
     <!-- App Name -->
-    <string name="app_name">Emaki</string>
 
     <!-- Main Screen -->
     <string name="open_library">Open library</string>

@@ -20,6 +20,7 @@ import io.aatricks.easyreader.data.repository.content.ReaderImageTileFetcher
 import io.aatricks.easyreader.data.repository.content.EpubImageFetcher
 import io.aatricks.easyreader.data.repository.content.HttpMediaCacheFetcher
 import io.aatricks.easyreader.util.CrashRecorder
+import io.aatricks.easyreader.config.AppConfig
 import io.aatricks.easyreader.work.ChapterDownloadQueue
 import dagger.hilt.android.HiltAndroidApp
 import kotlinx.coroutines.CoroutineScope
@@ -40,6 +41,7 @@ class EasyReaderApplication : Application(), SingletonImageLoader.Factory, Confi
     @Inject lateinit var workerFactory: HiltWorkerFactory
     @Inject lateinit var imageDimensionCache: ImageDimensionCacheRepository
     @Inject lateinit var readingHistorySeeder: ReadingHistorySeeder
+    @Inject lateinit var appConfig: AppConfig
 
     // WorkManager pulls this lazily before its first enqueue, which happens after Hilt
     // injection has populated `workerFactory`. Using on-demand initialization (no manual
@@ -54,6 +56,7 @@ class EasyReaderApplication : Application(), SingletonImageLoader.Factory, Confi
 
     override fun onCreate() {
         super.onCreate()
+        Log.i(TAG, "${appConfig.appName} ${appConfig.versionLabel} (git:${appConfig.gitCommitSha}) starting up")
         CrashRecorder.install(this)
         if (!resetLegacyWebOfflinePipelineIfNeeded()) {
             prewarmLastReadChapter()

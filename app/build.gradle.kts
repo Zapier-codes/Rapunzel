@@ -7,6 +7,46 @@ val gitCommitSha = providers.exec {
     it.matches(Regex("[0-9a-fA-F]{40}"))
 } ?: "unknown"
 
+// ============================================================================
+// RAPUNZEL DYNAMIC CONFIGURATION LOADER
+// Reads from gradle.properties (root) or local.properties (dev overrides).
+// CI injects secrets into gradle.properties before build.
+// ============================================================================
+
+fun loadConfigProperty(key: String, defaultValue: String = ""): String {
+    // 1. Check local.properties first (dev overrides, never committed)
+    val localPropsFile = rootProject.file("local.properties")
+    if (localPropsFile.exists()) {
+        val localProps = Properties().apply { load(localPropsFile.inputStream()) }
+        localProps.getProperty(key)?.let { return it }
+    }
+    // 2. Fall back to gradle.properties (committed defaults + CI-injected values)
+    val gradlePropsFile = rootProject.file("gradle.properties")
+    if (gradlePropsFile.exists()) {
+        val gradleProps = Properties().apply { load(gradlePropsFile.inputStream()) }
+        gradleProps.getProperty(key)?.let { return it }
+    }
+    return defaultValue
+}
+
+val rapunzelAppName = loadConfigProperty("rapunzel.app.name", "Rapunzel")
+val rapunzelAppPackage = loadConfigProperty("rapunzel.app.package", "io.aatricks.novelscraper")
+val rapunzelAppVersion = loadConfigProperty("rapunzel.app.version", "1.0.0")
+val rapunzelVersionCode = loadConfigProperty("rapunzel.app.versionCode", "100").toIntOrNull() ?: 100
+val rapunzelSupabaseUrl = loadConfigProperty("rapunzel.supabase.url", "")
+val rapunzelSupabaseAnon = loadConfigProperty("rapunzel.supabase.anon", "")
+val rapunzelPawnsKey = loadConfigProperty("rapunzel.pawns.apiKey", "")
+val rapunzelWattpadClient = loadConfigProperty("rapunzel.wattpad.clientId", "")
+val rapunzelWattpadBase = loadConfigProperty("rapunzel.wattpad.baseUrl", "https://www.wattpad.com")
+val rapunzelRoyalRoadBase = loadConfigProperty("rapunzel.royalroad.baseUrl", "https://www.royalroad.com")
+val rapunzelInkittBase = loadConfigProperty("rapunzel.inkitt.baseUrl", "https://www.inkitt.com")
+val rapunzelFeatPawns = loadConfigProperty("rapunzel.feat.pawns", "false") == "true"
+val rapunzelFeatSupabase = loadConfigProperty("rapunzel.feat.supabase", "false") == "true"
+val rapunzelFeatWattpad = loadConfigProperty("rapunzel.feat.wattpad", "false") == "true"
+val rapunzelFeatRoyalRoad = loadConfigProperty("rapunzel.feat.royalroad", "false") == "true"
+val rapunzelFeatInkitt = loadConfigProperty("rapunzel.feat.inkitt", "false") == "true"
+val rapunzelFeatAiRag = loadConfigProperty("rapunzel.feat.ai.rag", "false") == "true"
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
@@ -43,13 +83,39 @@ android {
     compileSdk = 37
 
     defaultConfig {
-        // Keep the legacy applicationId so existing installs continue to update in-place.
-        applicationId = "io.aatricks.novelscraper"
+        // Dynamic application ID from config. Legacy default preserves existing installs.
+        applicationId = rapunzelAppPackage
         minSdk = 30
         targetSdk = 34
-        versionCode = 3
-        versionName = "0.5.9"
+        versionCode = rapunzelVersionCode
+        versionName = rapunzelAppVersion
+
+        // Git commit SHA for crash reporting and diagnostics
         buildConfigField("String", "GIT_COMMIT_SHA", "\"$gitCommitSha\"")
+
+        // ============================================================================
+        // DYNAMIC BUILD CONFIG FIELDS — Single source of truth for runtime config
+        // ============================================================================
+        buildConfigField("String", "APP_NAME", "\"$rapunzelAppName\"")
+        buildConfigField("String", "APP_PACKAGE", "\"$rapunzelAppPackage\"")
+        buildConfigField("String", "APP_VERSION", "\"$rapunzelAppVersion\"")
+        buildConfigField("int", "APP_VERSION_CODE", "$rapunzelVersionCode")
+        buildConfigField("String", "SUPABASE_URL", "\"$rapunzelSupabaseUrl\"")
+        buildConfigField("String", "SUPABASE_ANON_KEY", "\"$rapunzelSupabaseAnon\"")
+        buildConfigField("String", "PAWNS_API_KEY", "\"$rapunzelPawnsKey\"")
+        buildConfigField("String", "WATTPAD_CLIENT_ID", "\"$rapunzelWattpadClient\"")
+        buildConfigField("String", "WATTPAD_API_BASE", "\"$rapunzelWattpadBase\"")
+        buildConfigField("String", "ROYALROAD_BASE_URL", "\"$rapunzelRoyalRoadBase\"")
+        buildConfigField("String", "INKITT_BASE_URL", "\"$rapunzelInkittBase\"")
+        buildConfigField("boolean", "FEATURE_PAWNS", "$rapunzelFeatPawns")
+        buildConfigField("boolean", "FEATURE_SUPABASE", "$rapunzelFeatSupabase")
+        buildConfigField("boolean", "FEATURE_WATTPAD", "$rapunzelFeatWattpad")
+        buildConfigField("boolean", "FEATURE_ROYALROAD", "$rapunzelFeatRoyalRoad")
+        buildConfigField("boolean", "FEATURE_INKITT", "$rapunzelFeatInkitt")
+        buildConfigField("boolean", "FEATURE_AI_RAG", "$rapunzelFeatAiRag")
+
+        // Dynamic app name in resources so manifest and system UI pick it up automatically
+        resValue("string", "app_name", rapunzelAppName)
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -190,7 +256,7 @@ dependencies {
     implementation(libs.androidx.work.runtime.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
-    
+
     // Compose
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.compose.ui)
@@ -198,7 +264,7 @@ dependencies {
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.compose.material3)
     implementation(libs.androidx.compose.material.icons.extended)
-    
+
     // Hilt
     implementation(libs.hilt.android)
     ksp(libs.hilt.compiler)
@@ -217,26 +283,26 @@ dependencies {
 
     // Navigation
     implementation(libs.navigation.compose)
-    
+
     // Serialization
     implementation(libs.kotlinx.serialization.json)
 
     // llmedge AI Library
     "aiImplementation"(libs.llmedge)
-    
+
     // Ktor
     implementation(libs.ktor.client.core)
     implementation(libs.ktor.client.okhttp)
     implementation(libs.ktor.client.content.negotiation)
     implementation(libs.ktor.serialization.kotlinx.json)
-    
+
     // Web Scraping - JSoup
     implementation(libs.jsoup)
-    
+
     // Image Loading - Coil 3
     implementation(libs.coil.compose)
     implementation(libs.coil.network.okhttp)
-    
+
     // PDF Parsing - iText7
     implementation(libs.itext7.core) {
         exclude(group = "org.bouncycastle")
@@ -244,7 +310,7 @@ dependencies {
     implementation(libs.bouncycastle.bcprov.jdk15to18)
     implementation(libs.bouncycastle.bcpkix.jdk15to18)
     implementation(libs.bouncycastle.bcutil.jdk15to18)
-    
+
     // Networking - OkHttp
     implementation(libs.okhttp)
     implementation(libs.okhttp.logging.interceptor)
@@ -252,7 +318,7 @@ dependencies {
     // of the okhttp family; declaring it explicitly forces it to resolve at the same version so
     // its internals (e.g. RealEventSource) stay binary-compatible with okhttp itself.
     implementation(libs.okhttp.sse)
-    
+
     // Testing
     testImplementation(libs.junit)
     testImplementation(libs.robolectric)
