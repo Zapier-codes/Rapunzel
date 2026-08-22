@@ -24,6 +24,7 @@ class PawnsManager @Inject constructor(
     val isAvailable: Boolean
         get() = appConfig.isPawnsEnabled && appConfig.pawnsApiKey.isNotBlank()
 
+    @Suppress("ReturnCount")
     fun initialize(context: Context) = repository.initialize(context)
 
     fun refreshConsent() = repository.refreshConsentState()

@@ -156,8 +156,10 @@ fun LibraryScreen(
         ) {
             AnimatedVisibility(
                 visible = isAddSectionVisible,
-                enter = expandVertically(animationSpec = tween(RapunzelMotion.medium)) + fadeIn(animationSpec = tween(RapunzelMotion.short)),
-                exit = shrinkVertically(animationSpec = tween(RapunzelMotion.short)) + fadeOut(animationSpec = tween(RapunzelMotion.short))
+                enter = expandVertically(animationSpec = tween(RapunzelMotion.medium)) +
+        fadeIn(animationSpec = tween(RapunzelMotion.short)),
+                exit = shrinkVertically(animationSpec = tween(RapunzelMotion.short)) +
+        fadeOut(animationSpec = tween(RapunzelMotion.short))
             ) {
                 AddNovelSection(
                     urlInput = urlInput,

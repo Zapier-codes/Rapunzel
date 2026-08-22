@@ -37,13 +37,14 @@ class EpubExporter @Inject constructor(
      * @param outputFile Destination file
      */
     suspend fun exportBook(
-        context: Context,
+        _context: Context,
         bookId: String,
         chapterIds: List<Long>? = null,
         outputFile: File,
     ): Result<ExportResult> = withContext(Dispatchers.IO) {
         try {
-            val book = database.bookDao().getBookById(bookId) ?: return@withContext Result.failure(Exception("Book not found"))
+            val book = database.bookDao().getBookById(bookId) ?: return@withContext
+        Result.failure(Exception("Book not found"))
             val chapters = if (chapterIds != null) {
                 database.chapterDao().getChaptersForBook(bookId).filter { it.id in chapterIds }
             } else {
@@ -56,7 +57,7 @@ class EpubExporter @Inject constructor(
 
             writeEpub(outputFile, book.title, book.author, chapters)
             Result.success(ExportResult(outputFile, chapters.size))
-        } catch (e: Exception) {
+        } catch (e: RuntimeException) {
             Log.e(tag, "Export failed", e)
             Result.failure(e)
         }

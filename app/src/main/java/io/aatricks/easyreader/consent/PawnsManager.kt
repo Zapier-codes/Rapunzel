@@ -32,7 +32,7 @@ class PawnsManager @Inject constructor(
                 currentApiKey = apiKey
                 isInitialized = true
                 Log.i(TAG, "Pawns SDK initialized successfully")
-            } catch (e: Exception) {
+            } catch (e: RuntimeException) {
                 Log.e(TAG, "Failed to initialize Pawns SDK", e)
             }
         }
@@ -43,7 +43,7 @@ class PawnsManager @Inject constructor(
                 isInitialized = false
                 currentApiKey = null
                 Log.i(TAG, "Pawns SDK shutdown")
-            } catch (e: Exception) {
+            } catch (e: RuntimeException) {
                 Log.e(TAG, "Error shutting down Pawns SDK", e)
             }
         }

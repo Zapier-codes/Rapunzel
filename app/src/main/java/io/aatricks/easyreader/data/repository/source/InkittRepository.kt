@@ -4,7 +4,8 @@ import android.util.Log
 import io.aatricks.easyreader.config.AppConfig
 import io.aatricks.easyreader.data.model.SourceBook
 import io.aatricks.easyreader.data.model.SourceChapter
-import io.aatricks.easyreader.data.remote.inkitt.*
+import io.aatricks.easyreader.data.remote.inkitt.InkittApiService
+import io.aatricks.easyreader.data.remote.inkitt.InkittStory
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
@@ -52,7 +53,7 @@ class InkittRepository @Inject constructor(
             } else {
                 Result.failure(Exception("Auth failed: ${response.code()} ${response.message()}"))
             }
-        } catch (e: Exception) {
+        } catch (e: RuntimeException) {
             Log.e(tag, "Auth error", e)
             Result.failure(e)
         }
@@ -76,7 +77,7 @@ class InkittRepository @Inject constructor(
                 Log.w(tag, "Search failed: ${response.code()}")
                 emptyList()
             }
-        } catch (e: Exception) {
+        } catch (e: RuntimeException) {
             Log.e(tag, "Search error", e)
             emptyList()
         }
@@ -95,7 +96,7 @@ class InkittRepository @Inject constructor(
             } else {
                 emptyList()
             }
-        } catch (e: Exception) {
+        } catch (e: RuntimeException) {
             Log.e(tag, "Popular fetch error", e)
             emptyList()
         }
@@ -114,7 +115,7 @@ class InkittRepository @Inject constructor(
             } else {
                 emptyList()
             }
-        } catch (e: Exception) {
+        } catch (e: RuntimeException) {
             Log.e(tag, "Browse error", e)
             emptyList()
         }
@@ -125,7 +126,7 @@ class InkittRepository @Inject constructor(
     // =========================================================================
 
     override suspend fun getNovelDetails(url: String): ExploreItem = withContext(Dispatchers.IO) {
-        if (!isEnabled) throw IllegalStateException("Inkitt disabled")
+        if (!isEnabled) error("Inkitt disabled")
         val storyId = extractStoryId(url)
         val response = apiService.getStory(storyId)
         if (response.isSuccessful) {

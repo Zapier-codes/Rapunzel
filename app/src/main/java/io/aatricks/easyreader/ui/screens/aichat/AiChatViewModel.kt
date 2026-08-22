@@ -25,7 +25,7 @@ class AiChatViewModel @Inject constructor(
             try {
                 val answer = queryEngine.ask(text, bookId)
                 messages.add(ChatMessage(text = answer.answer, isUser = false))
-            } catch (e: Exception) {
+            } catch (e: RuntimeException) {
                 messages.add(ChatMessage(text = "Sorry, something went wrong: ${e.message}", isUser = false))
             } finally {
                 isLoading.value = false

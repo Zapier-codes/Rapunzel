@@ -36,7 +36,7 @@ data class WattpadPart(
     val id: Long,
     val title: String? = null,
     val url: String? = null,
-    val text_url: String? = null,
+    @SerialName("text_url") val textUrl: String? = null,
     val commentCount: Long = 0,
     val voteCount: Long = 0,
     val readCount: Long = 0,

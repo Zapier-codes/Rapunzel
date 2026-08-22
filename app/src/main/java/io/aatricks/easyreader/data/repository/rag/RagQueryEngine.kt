@@ -98,7 +98,7 @@ ANSWER:""".trimIndent()
             val result = instance.javaClass.getMethod("generate", String::class.java)
                 .invoke(instance, prompt) as? String
             result
-        } catch (e: Exception) {
+        } catch (e: RuntimeException) {
             Log.d(tag, "Generative LLM not available: ${e.message}")
             null
         }

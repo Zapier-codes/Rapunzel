@@ -42,7 +42,7 @@ class RoyalRoadSource @Inject constructor(
             val url = "$baseUrl/fictions/best-ranked?page=$page"
             val doc = getDocument(url)
             doc.select(".fiction-list-item").mapNotNull { it.toExploreItem() }
-        } catch (e: Exception) {
+        } catch (e: RuntimeException) {
             Log.e(tag, "Popular fetch failed", e)
             emptyList()
         }
@@ -58,7 +58,7 @@ class RoyalRoadSource @Inject constructor(
             }
             val doc = getDocument(url)
             doc.select(".fiction-list-item").mapNotNull { it.toExploreItem() }
-        } catch (e: Exception) {
+        } catch (e: RuntimeException) {
             Log.e(tag, "Browse fetch failed", e)
             emptyList()
         }
@@ -74,7 +74,7 @@ class RoyalRoadSource @Inject constructor(
             val url = "$baseUrl/fictions/search?search=${java.net.URLEncoder.encode(query, "UTF-8")}&page=$page"
             val doc = getDocument(url)
             doc.select(".fiction-list-item").mapNotNull { it.toExploreItem() }
-        } catch (e: Exception) {
+        } catch (e: RuntimeException) {
             Log.e(tag, "Search failed", e)
             emptyList()
         }
@@ -85,7 +85,7 @@ class RoyalRoadSource @Inject constructor(
     // =========================================================================
 
     override suspend fun getNovelDetails(url: String): ExploreItem = io {
-        if (!isEnabled) throw IllegalStateException("Royal Road disabled")
+        if (!isEnabled) error("Royal Road disabled")
         val doc = getDocument(url)
         val fictionId = url.substringAfter("/fiction/").takeWhile { it.isDigit() }
 

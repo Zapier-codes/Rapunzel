@@ -34,15 +34,11 @@ import io.aatricks.easyreader.ui.screens.ReaderScreen
 import io.aatricks.easyreader.ui.screens.explore.ExploreScreen
 import io.aatricks.easyreader.ui.screens.scroll.ScrollScreen
 import io.aatricks.easyreader.ui.screens.settings.SettingsScreen
-import io.aatricks.easyreader.ui.theme.RapunzelTheme
+import io.aatricks.easyreader.ui.theme.NovelScraperTheme
 import io.aatricks.easyreader.ui.viewmodel.LibraryViewModel
 import io.aatricks.easyreader.ui.viewmodel.ReaderViewModel
 import io.aatricks.easyreader.util.FileUtils
-import io.aatricks.easyreader.consent.ConsentManager
-import io.aatricks.easyreader.consent.ConsentModal
-import io.aatricks.easyreader.consent.PawnsManager
 import io.aatricks.easyreader.util.UrlSecurity
-import io.aatricks.easyreader.config.AppConfig
 import io.aatricks.easyreader.work.LibraryUpdateWorker
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -68,7 +64,6 @@ class MainActivity : ComponentActivity() {
     
     @Inject lateinit var contentRepository: ContentRepository
     @Inject lateinit var preferencesManager: PreferencesManager
-    @Inject lateinit var appConfig: AppConfig
 
     private val filePickerLauncher = registerForActivityResult(
         ActivityResultContracts.OpenDocument()
@@ -89,10 +84,9 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         // installSplashScreen() must run before super.onCreate so the splash window
         // is composited correctly. It also swaps the activity theme to the post-splash
-        // Theme.Rapunzel so Compose inherits the right windowBackground.
+        // Theme.EasyReader so Compose inherits the right windowBackground.
         installSplashScreen()
         super.onCreate(savedInstanceState)
-        val pawnsApiKey = BuildConfig.PAWNS_API_KEY
         enableEdgeToEdge()
 
         setContent {
@@ -108,7 +102,7 @@ class MainActivity : ComponentActivity() {
                 else -> isSystemDark
             }
 
-            RapunzelTheme(
+            NovelScraperTheme(
                 darkTheme = darkTheme,
                 dynamicColor = appearanceSettings.dynamicColor,
                 accentTheme = readerUiState.accentTheme
@@ -147,7 +141,7 @@ class MainActivity : ComponentActivity() {
                         )
                     }
 
-                appUpdateHandler(updateViewModel, updateState, appConfig.appName)
+                appUpdateHandler(updateViewModel, updateState)
 
                 NavHost(navController = navController, startDestination = ReaderRoute) {
                     composable<ReaderRoute> {

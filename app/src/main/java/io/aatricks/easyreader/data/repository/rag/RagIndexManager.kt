@@ -50,7 +50,7 @@ class RagIndexManager @Inject constructor(
             }
             totalDocs += chapters.size
             Log.i(tag, "Indexed ${chapters.size} chapters for book $bookId")
-        } catch (e: Exception) {
+        } catch (e: RuntimeException) {
             Log.e(tag, "Indexing failed for book $bookId", e)
         }
     }

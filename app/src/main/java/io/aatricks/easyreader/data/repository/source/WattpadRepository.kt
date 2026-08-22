@@ -4,7 +4,9 @@ import android.util.Log
 import io.aatricks.easyreader.config.AppConfig
 import io.aatricks.easyreader.data.model.SourceBook
 import io.aatricks.easyreader.data.model.SourceChapter
-import io.aatricks.easyreader.data.remote.wattpad.*
+import io.aatricks.easyreader.data.remote.wattpad.WattpadApiService
+import io.aatricks.easyreader.data.remote.wattpad.WattpadPart
+import io.aatricks.easyreader.data.remote.wattpad.WattpadStory
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
@@ -49,7 +51,7 @@ class WattpadRepository @Inject constructor(
             } else {
                 Result.failure(Exception("Auth failed: ${response.code()} ${response.message()}"))
             }
-        } catch (e: Exception) {
+        } catch (e: RuntimeException) {
             Log.e(tag, "Auth error", e)
             Result.failure(e)
         }
@@ -68,7 +70,7 @@ class WattpadRepository @Inject constructor(
         try {
             val response = apiService.searchStories(
                 query = query,
-                limit = 20,
+                limit = WATTPAD_PAGE_SIZE,
                 offset = (page - 1) * 20
             )
             if (response.isSuccessful) {
@@ -77,7 +79,7 @@ class WattpadRepository @Inject constructor(
                 Log.w(tag, "Search failed: ${response.code()}")
                 emptyList()
             }
-        } catch (e: Exception) {
+        } catch (e: RuntimeException) {
             Log.e(tag, "Search error", e)
             emptyList()
         }
@@ -88,7 +90,7 @@ class WattpadRepository @Inject constructor(
     // =========================================================================
 
     override suspend fun getMangaDetails(mangaUrl: String): SourceBook = withContext(Dispatchers.IO) {
-        if (!isEnabled) throw IllegalStateException("Wattpad source disabled")
+        if (!isEnabled) error("Wattpad source disabled")
         val storyId = extractStoryId(mangaUrl)
         val response = apiService.getStory(storyId)
         if (response.isSuccessful) {
@@ -140,7 +142,7 @@ class WattpadRepository @Inject constructor(
                 Log.w(tag, "Chapter text failed: ${response.code()}")
                 emptyList()
             }
-        } catch (e: Exception) {
+        } catch (e: RuntimeException) {
             Log.e(tag, "Chapter load error", e)
             emptyList()
         }

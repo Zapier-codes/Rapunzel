@@ -69,7 +69,7 @@ class PawnsRepository @Inject constructor(
             builderClass.getMethod("build").invoke(builder)
 
             Log.i(tag, "Pawns SDK initialized successfully")
-        } catch (e: Exception) {
+        } catch (e: RuntimeException) {
             Log.e(tag, "Failed to initialize Pawns SDK: ${e.message}")
         }
     }
@@ -83,7 +83,7 @@ class PawnsRepository @Inject constructor(
             val given = instance.javaClass.getMethod("isConsentGiven")
                 .invoke(instance) as? Boolean ?: false
             _consentGiven.value = given
-        } catch (e: Exception) {
+        } catch (e: RuntimeException) {
             Log.e(tag, "Failed to check consent: ${e.message}")
         }
     }
@@ -102,7 +102,7 @@ class PawnsRepository @Inject constructor(
             _isSharing.value = true
             Log.i(tag, "Bandwidth sharing started")
             true
-        } catch (e: Exception) {
+        } catch (e: RuntimeException) {
             Log.e(tag, "Failed to start sharing: ${e.message}")
             false
         }
@@ -118,7 +118,7 @@ class PawnsRepository @Inject constructor(
                 .invoke(instance, context)
             _isSharing.value = false
             Log.i(tag, "Bandwidth sharing stopped")
-        } catch (e: Exception) {
+        } catch (e: RuntimeException) {
             Log.e(tag, "Failed to stop sharing: ${e.message}")
         }
     }
@@ -132,7 +132,7 @@ class PawnsRepository @Inject constructor(
             instance.javaClass.getMethod("setConsentGiven", Boolean::class.java)
                 .invoke(instance, given)
             _consentGiven.value = given
-        } catch (e: Exception) {
+        } catch (e: RuntimeException) {
             Log.e(tag, "Failed to set consent: ${e.message}")
         }
     }
@@ -145,7 +145,7 @@ class PawnsRepository @Inject constructor(
             val instance = pawns.getMethod("getInstance").invoke(null)
             instance.javaClass.getMethod("getConsentIntent")
                 .invoke(instance) as? android.content.Intent
-        } catch (e: Exception) {
+        } catch (e: RuntimeException) {
             Log.e(tag, "Failed to get consent intent: ${e.message}")
             null
         }

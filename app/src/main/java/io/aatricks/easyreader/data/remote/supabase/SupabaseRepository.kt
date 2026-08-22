@@ -19,7 +19,7 @@ import javax.inject.Singleton
  */
 @Singleton
 class SupabaseRepository @Inject constructor(
-    private val appConfig: AppConfig,
+    private val _appConfig: AppConfig,
     private val clientProvider: SupabaseClientProvider,
 ) {
     private val tag = "SupabaseRepository"
@@ -36,7 +36,7 @@ class SupabaseRepository @Inject constructor(
         try {
             client?.auth?.signInWith(Google)
             Result.success(Unit)
-        } catch (e: Exception) {
+        } catch (e: RuntimeException) {
             Log.e(tag, "Google sign-in failed", e)
             Result.failure(e)
         }
@@ -47,7 +47,7 @@ class SupabaseRepository @Inject constructor(
         try {
             client?.auth?.signOut()
             Result.success(Unit)
-        } catch (e: Exception) {
+        } catch (e: RuntimeException) {
             Log.e(tag, "Sign-out failed", e)
             Result.failure(e)
         }
@@ -87,7 +87,7 @@ class SupabaseRepository @Inject constructor(
             )
             client?.from("reading_progress")?.upsert(row)
             Result.success(Unit)
-        } catch (e: Exception) {
+        } catch (e: RuntimeException) {
             Log.e(tag, "Save progress failed", e)
             Result.failure(e)
         }
@@ -108,7 +108,7 @@ class SupabaseRepository @Inject constructor(
             } else {
                 Result.success(1 to 1)
             }
-        } catch (e: Exception) {
+        } catch (e: RuntimeException) {
             Log.e(tag, "Load progress failed", e)
             Result.failure(e)
         }
@@ -123,7 +123,7 @@ class SupabaseRepository @Inject constructor(
                 ?.eq("user_id", user.id)
                 ?.decodeList<ReadingProgressRow>()
             Result.success(result ?: emptyList())
-        } catch (e: Exception) {
+        } catch (e: RuntimeException) {
             Log.e(tag, "Get all progress failed", e)
             Result.failure(e)
         }
@@ -149,13 +149,13 @@ class SupabaseRepository @Inject constructor(
             val row = PlatformCredentialRow(
                 user_id = user.id,
                 platform = platform,
-                encrypted_username = username, // TODO: encrypt with Android Keystore before storing
+                encrypted_username = username, // NOTE: encrypt with Android Keystore before storing
                 encrypted_password = password,
                 platform_user_id = platformUserId,
             )
             client?.from("platform_credentials")?.upsert(row)
             Result.success(Unit)
-        } catch (e: Exception) {
+        } catch (e: RuntimeException) {
             Log.e(tag, "Save credentials failed", e)
             Result.failure(e)
         }
@@ -171,7 +171,7 @@ class SupabaseRepository @Inject constructor(
                 ?.eq("platform", platform)
                 ?.decodeSingleOrNull<PlatformCredentialRow>()
             Result.success(result)
-        } catch (e: Exception) {
+        } catch (e: RuntimeException) {
             Log.e(tag, "Get credentials failed", e)
             Result.failure(e)
         }
@@ -194,7 +194,7 @@ class SupabaseRepository @Inject constructor(
             val row = StoryCacheRow(platform, storyId, metadataJson)
             client?.from("story_cache")?.upsert(row)
             Result.success(Unit)
-        } catch (e: Exception) {
+        } catch (e: RuntimeException) {
             Log.e(tag, "Cache story failed", e)
             Result.failure(e)
         }
@@ -209,7 +209,7 @@ class SupabaseRepository @Inject constructor(
                 ?.eq("story_id", storyId)
                 ?.decodeSingleOrNull<StoryCacheRow>()
             Result.success(result)
-        } catch (e: Exception) {
+        } catch (e: RuntimeException) {
             Log.e(tag, "Get cached story failed", e)
             Result.failure(e)
         }
