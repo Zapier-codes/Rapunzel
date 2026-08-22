@@ -1,0 +1,13 @@
+diff --git a/app/build.gradle.kts b/app/build.gradle.kts
+index 0e8a39b..09b5372 100644
+--- a/app/build.gradle.kts
++++ b/app/build.gradle.kts
+@@ -50,7 +50,7 @@ android {
+         versionCode = 3
+         versionName = "0.5.9"
+         buildConfigField("String", "GIT_COMMIT_SHA", "\"$gitCommitSha\"")
+-        buildConfigField("String", "PAWNS_API_KEY", ""${System.getenv("PAWNS_API_KEY") ?: ""}"")
++        buildConfigField("String", "PAWNS_API_KEY", "\"${System.getenv("PAWNS_API_KEY") ?: ""}\"")
+ 
+         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+     }

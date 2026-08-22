@@ -1,0 +1,12 @@
+diff --git a/app/build.gradle.kts b/app/build.gradle.kts
+index 69cbd71..4a506a4 100644
+--- a/app/build.gradle.kts
++++ b/app/build.gradle.kts
+@@ -186,7 +186,6 @@ android {
+     buildFeatures {
+         buildConfig = true
+         compose = true
+-        manifestPlaceholders = true
+     }
+     sourceSets {
+         getByName("standard") {
