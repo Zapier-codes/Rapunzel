@@ -1,3 +1,5 @@
+@file:Suppress("WildcardImport")
+
 package io.aatricks.easyreader.ui.screens.aichat
 
 import androidx.compose.foundation.layout.*

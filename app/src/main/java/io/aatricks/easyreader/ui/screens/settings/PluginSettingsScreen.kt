@@ -1,3 +1,5 @@
+@file:Suppress("WildcardImport")
+
 package io.aatricks.easyreader.ui.screens.settings
 
 import androidx.compose.foundation.layout.*

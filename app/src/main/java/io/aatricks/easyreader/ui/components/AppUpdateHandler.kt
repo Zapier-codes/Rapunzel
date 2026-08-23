@@ -40,7 +40,7 @@ private const val DEFERRED_STARTUP_DELAY_MS = 2000L
 fun appUpdateHandler(
     updateViewModel: UpdateViewModel,
     updateState: UpdateViewModel.UpdateUiState,
-    appName: String
+    appName: String = "Rapunzel"
 ) {
     val context = LocalContext.current
     var showUpdateDialog by remember { mutableStateOf(false) }
@@ -75,7 +75,7 @@ fun appUpdateHandler(
     if (showUpdateDialog) {
         val update = updateState.updateAvailable
         if (update != null) {
-            updateDialog(update, updateState.currentVersion, updateViewModel) {
+            updateDialog(update, updateState.currentVersion, updateViewModel, appName = appName) {
                 showUpdateDialog = false
             }
         }
@@ -101,7 +101,7 @@ fun appUpdateHandler(
     }
 
     if (showPermissionWarningDialog) {
-        permissionWarningDialog(updateViewModel) {
+        permissionWarningDialog(updateViewModel, appName = appName) {
             showPermissionWarningDialog = false
         }
     }

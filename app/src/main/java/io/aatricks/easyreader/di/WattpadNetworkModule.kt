@@ -20,11 +20,10 @@ import javax.inject.Singleton
 @InstallIn(SingletonComponent::class)
 object WattpadNetworkModule {
 
-    @Provides
-    @Singleton
-    fun provideWattpadAuthInterceptor(appConfig: AppConfig): WattpadAuthInterceptor {
-        return WattpadAuthInterceptor(appConfig)
-    }
+    private const val NETWORK_TIMEOUT_SECONDS = 30L
+
+    // WattpadAuthInterceptor is constructor-injected (@Inject constructor); no manual
+    // @Provides binding here to avoid a duplicate Dagger binding.
 
     @Provides
     @Singleton
@@ -38,7 +37,7 @@ object WattpadNetworkModule {
                 level = HttpLoggingInterceptor.Level.BASIC
             })
             .connectTimeout(NETWORK_TIMEOUT_SECONDS, TimeUnit.SECONDS)
-            .readTimeout(30, TimeUnit.SECONDS)
+            .readTimeout(NETWORK_TIMEOUT_SECONDS, TimeUnit.SECONDS)
             .build()
     }
 

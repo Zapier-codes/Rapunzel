@@ -1,7 +1,6 @@
 package io.aatricks.easyreader.data.remote.supabase
 
 import android.util.Log
-import io.aatricks.easyreader.config.AppConfig
 import io.github.jan.supabase.auth.auth
 import io.github.jan.supabase.auth.providers.Google
 import io.github.jan.supabase.auth.user.UserInfo
@@ -9,6 +8,7 @@ import io.github.jan.supabase.postgrest.from
 import io.github.jan.supabase.postgrest.query.Columns
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -19,7 +19,6 @@ import javax.inject.Singleton
  */
 @Singleton
 class SupabaseRepository @Inject constructor(
-    private val _appConfig: AppConfig,
     private val clientProvider: SupabaseClientProvider,
 ) {
     private val tag = "SupabaseRepository"
@@ -64,13 +63,13 @@ class SupabaseRepository @Inject constructor(
 
     @Serializable
     data class ReadingProgressRow(
-        val user_id: String? = null,
+        @SerialName("user_id") val userId: String? = null,
         val platform: String,
-        val story_id: String,
-        val story_title: String? = null,
-        val last_chapter: Int = 1,
-        val last_page: Int = 1,
-        val updated_at: String? = null,
+        @SerialName("story_id") val storyId: String,
+        @SerialName("story_title") val storyTitle: String? = null,
+        @SerialName("last_chapter") val lastChapter: Int = 1,
+        @SerialName("last_page") val lastPage: Int = 1,
+        @SerialName("updated_at") val updatedAt: String? = null,
     )
 
     suspend fun saveProgress(platform: String, storyId: String, chapter: Int, page: Int, title: String? = null): Result<Unit> = withContext(Dispatchers.IO) {
@@ -78,12 +77,12 @@ class SupabaseRepository @Inject constructor(
         val user = currentUser() ?: return@withContext Result.failure(Exception("Not authenticated"))
         try {
             val row = ReadingProgressRow(
-                user_id = user.id,
+                userId = user.id,
                 platform = platform,
-                story_id = storyId,
-                story_title = title,
-                last_chapter = chapter,
-                last_page = page,
+                storyId = storyId,
+                storyTitle = title,
+                lastChapter = chapter,
+                lastPage = page,
             )
             client?.from("reading_progress")?.upsert(row)
             Result.success(Unit)
@@ -104,7 +103,7 @@ class SupabaseRepository @Inject constructor(
                 ?.eq("story_id", storyId)
                 ?.decodeSingleOrNull<ReadingProgressRow>()
             if (result != null) {
-                Result.success(result.last_chapter to result.last_page)
+                Result.success(result.lastChapter to result.lastPage)
             } else {
                 Result.success(1 to 1)
             }
@@ -135,11 +134,11 @@ class SupabaseRepository @Inject constructor(
 
     @Serializable
     data class PlatformCredentialRow(
-        val user_id: String? = null,
+        @SerialName("user_id") val userId: String? = null,
         val platform: String,
-        val encrypted_username: String,
-        val encrypted_password: String,
-        val platform_user_id: String? = null,
+        @SerialName("encrypted_username") val encryptedUsername: String,
+        @SerialName("encrypted_password") val encryptedPassword: String,
+        @SerialName("platform_user_id") val platformUserId: String? = null,
     )
 
     suspend fun saveCredentials(platform: String, username: String, password: String, platformUserId: String? = null): Result<Unit> = withContext(Dispatchers.IO) {
@@ -147,11 +146,11 @@ class SupabaseRepository @Inject constructor(
         val user = currentUser() ?: return@withContext Result.failure(Exception("Not authenticated"))
         try {
             val row = PlatformCredentialRow(
-                user_id = user.id,
+                userId = user.id,
                 platform = platform,
-                encrypted_username = username, // NOTE: encrypt with Android Keystore before storing
-                encrypted_password = password,
-                platform_user_id = platformUserId,
+                encryptedUsername = username, // NOTE: encrypt with Android Keystore before storing
+                encryptedPassword = password,
+                platformUserId = platformUserId,
             )
             client?.from("platform_credentials")?.upsert(row)
             Result.success(Unit)
@@ -184,7 +183,7 @@ class SupabaseRepository @Inject constructor(
     @Serializable
     data class StoryCacheRow(
         val platform: String,
-        val story_id: String,
+        @SerialName("story_id") val storyId: String,
         val metadata: String, // JSON string
     )
 

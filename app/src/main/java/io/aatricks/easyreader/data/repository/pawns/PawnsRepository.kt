@@ -17,6 +17,10 @@ import java.time.format.DateTimeFormatter
 import javax.inject.Inject
 import javax.inject.Singleton
 
+private const val EARNINGS_RETENTION_DAYS = 90L
+private const val HOURS_PER_DAY = 24L
+private const val SECONDS_PER_HOUR = 3600L
+
 /**
  * Repository wrapping the Pawns SDK bandwidth-sharing functionality.
  *
@@ -55,7 +59,9 @@ class PawnsRepository @Inject constructor(
             return
         }
         try {
-            val pawnsClass = Class.forName("app.pawns.sdk.Pawns")
+            // Touch the Pawns class first so a missing SDK artifact fails fast
+            // with a clear ClassNotFoundException before we build the Builder.
+            Class.forName("app.pawns.sdk.Pawns")
             val builderClass = Class.forName("app.pawns.sdk.Pawns\$Builder")
             val serviceTypeClass = Class.forName("app.pawns.sdk.ServiceType")
             val foreground = serviceTypeClass.getField("FOREGROUND").get(null)
@@ -138,6 +144,11 @@ class PawnsRepository @Inject constructor(
     }
 
     /** Get the SDK consent intent for ActivityResultLauncher. */
+    @Suppress("UnusedParameter")
+    // `context` is kept in the public signature to match the Pawns SDK's real
+    // getConsentIntent(Context) overload; the reflection call below targets the
+    // no-arg overload used by the stub build. Wire the Context through once the
+    // real `app.pawns.sdk` artifact is on the classpath.
     fun getConsentIntent(context: Context): android.content.Intent? {
         if (!appConfig.isPawnsEnabled) return null
         return try {
@@ -183,10 +194,11 @@ class PawnsRepository @Inject constructor(
         refreshEarnings()
     }
 
-    /** Prune earnings older than 90 days. */
+    /** Prune earnings older than [EARNINGS_RETENTION_DAYS] days. */
     suspend fun pruneOldEarnings() {
+        val retentionSeconds = EARNINGS_RETENTION_DAYS * HOURS_PER_DAY * SECONDS_PER_HOUR
         val cutoff = DateTimeFormatter.ISO_LOCAL_DATE.format(
-            Instant.now().minusSeconds(90 * 24 * 3600).atZone(ZoneId.systemDefault())
+            Instant.now().minusSeconds(retentionSeconds).atZone(ZoneId.systemDefault())
         )
         earningsDao.pruneOldEarnings(cutoff)
     }

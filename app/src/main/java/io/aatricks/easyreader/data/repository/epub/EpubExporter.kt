@@ -1,7 +1,5 @@
 package io.aatricks.easyreader.data.repository.epub
 
-import android.content.Context
-import android.net.Uri
 import android.util.Log
 import io.aatricks.easyreader.data.local.AppDatabase
 import io.aatricks.easyreader.data.local.ChapterEntity
@@ -31,13 +29,11 @@ class EpubExporter @Inject constructor(
 
     /**
      * Export selected chapters of a book to EPUB.
-     * @param context Android context for temp file access
      * @param bookId Local book ID
      * @param chapterIds Specific chapters to export, or null for all
      * @param outputFile Destination file
      */
     suspend fun exportBook(
-        _context: Context,
         bookId: String,
         chapterIds: List<Long>? = null,
         outputFile: File,

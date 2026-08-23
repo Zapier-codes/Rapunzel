@@ -5,6 +5,7 @@ import io.aatricks.easyreader.config.AppConfig
 import io.aatricks.easyreader.data.model.SourceBook
 import io.aatricks.easyreader.data.model.SourceChapter
 import io.aatricks.easyreader.data.remote.inkitt.InkittApiService
+import io.aatricks.easyreader.data.remote.inkitt.InkittAuthInterceptor
 import io.aatricks.easyreader.data.remote.inkitt.InkittStory
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -130,9 +131,9 @@ class InkittRepository @Inject constructor(
         val storyId = extractStoryId(url)
         val response = apiService.getStory(storyId)
         if (response.isSuccessful) {
-            response.body()?.toExploreItem() ?: throw Exception("Empty story response")
+            response.body()?.toExploreItem() ?: throw RuntimeException("Empty story response")
         } else {
-            throw Exception("Failed to load story: ${response.code()}")
+            throw RuntimeException("Failed to load story: ${response.code()}")
         }
     }
 

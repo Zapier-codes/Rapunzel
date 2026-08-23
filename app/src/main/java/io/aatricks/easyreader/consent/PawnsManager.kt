@@ -12,6 +12,9 @@ import javax.inject.Singleton
 
 @Singleton
 class PawnsManager @Inject constructor(
+    // Reserved for wiring into the real Pawns SDK's init call, which requires an
+    // Android Context; the SDK integration itself is still stubbed out below.
+    @Suppress("UnusedPrivateProperty")
     @ApplicationContext private val context: Context
 ) {
     companion object {
@@ -19,6 +22,7 @@ class PawnsManager @Inject constructor(
         private var isInitialized = false
         private var currentApiKey: String? = null
 
+        @Suppress("UnusedParameter")
         fun initialize(context: Context, apiKey: String) {
             if (isInitialized) {
                 Log.d(TAG, "Pawns SDK already initialized")

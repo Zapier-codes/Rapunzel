@@ -20,11 +20,10 @@ import javax.inject.Singleton
 @InstallIn(SingletonComponent::class)
 object InkittNetworkModule {
 
-    @Provides
-    @Singleton
-    fun provideInkittAuthInterceptor(appConfig: AppConfig): InkittAuthInterceptor {
-        return InkittAuthInterceptor(appConfig)
-    }
+    private const val NETWORK_TIMEOUT_SECONDS = 30L
+
+    // InkittAuthInterceptor is constructor-injected (@Inject constructor); no manual
+    // @Provides binding here to avoid a duplicate Dagger binding.
 
     @Provides
     @Singleton
@@ -38,7 +37,7 @@ object InkittNetworkModule {
                 level = HttpLoggingInterceptor.Level.BASIC
             })
             .connectTimeout(NETWORK_TIMEOUT_SECONDS, TimeUnit.SECONDS)
-            .readTimeout(30, TimeUnit.SECONDS)
+            .readTimeout(NETWORK_TIMEOUT_SECONDS, TimeUnit.SECONDS)
             .build()
     }
 

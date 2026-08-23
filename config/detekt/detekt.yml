@@ -7,3 +7,22 @@ style:
   MagicNumber:
     # A number assigned to a named property (e.g. palette colors) is already named
     ignorePropertyDeclaration: true
+  # Repository/manager classes deliberately catch/throw RuntimeException as the
+  # boundary type when wrapping third-party SDK calls (Retrofit, Supabase/Ktor,
+  # Room) into Result<T>. Keep Exception/Throwable/Error/NPE flagged as those are
+  # still too broad, but stop flagging the intentional RuntimeException pattern.
+  TooGenericExceptionCaught:
+    exceptionNames:
+      - ArrayIndexOutOfBoundsException
+      - Error
+      - Exception
+      - IllegalMonitorStateException
+      - IndexOutOfBoundsException
+      - NullPointerException
+      - Throwable
+  TooGenericExceptionThrown:
+    exceptionNames:
+      - Error
+      - Exception
+      - Throwable
+      - NullPointerException

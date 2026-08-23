@@ -5,6 +5,7 @@ import io.aatricks.easyreader.config.AppConfig
 import io.aatricks.easyreader.data.model.SourceBook
 import io.aatricks.easyreader.data.model.SourceChapter
 import io.aatricks.easyreader.data.remote.wattpad.WattpadApiService
+import io.aatricks.easyreader.data.remote.wattpad.WattpadAuthInterceptor
 import io.aatricks.easyreader.data.remote.wattpad.WattpadPart
 import io.aatricks.easyreader.data.remote.wattpad.WattpadStory
 import kotlinx.coroutines.Dispatchers
@@ -94,9 +95,9 @@ class WattpadRepository @Inject constructor(
         val storyId = extractStoryId(mangaUrl)
         val response = apiService.getStory(storyId)
         if (response.isSuccessful) {
-            response.body()?.toSourceBook() ?: throw Exception("Empty story response")
+            response.body()?.toSourceBook() ?: throw RuntimeException("Empty story response")
         } else {
-            throw Exception("Failed to load story: ${response.code()}")
+            throw RuntimeException("Failed to load story: ${response.code()}")
         }
     }
 

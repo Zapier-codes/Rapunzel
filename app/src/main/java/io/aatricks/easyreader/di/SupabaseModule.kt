@@ -6,7 +6,6 @@ import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import io.aatricks.easyreader.config.AppConfig
 import io.aatricks.easyreader.data.remote.supabase.SupabaseClientProvider
-import io.aatricks.easyreader.data.remote.supabase.SupabaseRepository
 import javax.inject.Singleton
 
 @Module
@@ -19,12 +18,6 @@ object SupabaseModule {
         return SupabaseClientProvider(appConfig)
     }
 
-    @Provides
-    @Singleton
-    fun provideSupabaseRepository(
-        appConfig: AppConfig,
-        clientProvider: SupabaseClientProvider,
-    ): SupabaseRepository {
-        return SupabaseRepository(appConfig, clientProvider)
-    }
+    // SupabaseRepository is constructor-injected (@Inject constructor); no manual
+    // @Provides binding here to avoid a duplicate Dagger binding.
 }

@@ -1,3 +1,5 @@
+@file:Suppress("WildcardImport")
+
 package io.aatricks.easyreader.ui.screens.settings
 
 import android.app.Activity
@@ -106,8 +108,8 @@ fun PawnsSettingsSection(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceEvenly
                     ) {
-                        EarningsStat("Today", "\$${String.format("%.2f", earningsToday)}")
-                        EarningsStat("Total", "\$${String.format("%.2f", totalEarnings)}")
+                        EarningsStat("Today", "\$${String.format(java.util.Locale.US, "%.2f", earningsToday)}")
+                        EarningsStat("Total", "\$${String.format(java.util.Locale.US, "%.2f", totalEarnings)}")
                     }
                 }
             }
