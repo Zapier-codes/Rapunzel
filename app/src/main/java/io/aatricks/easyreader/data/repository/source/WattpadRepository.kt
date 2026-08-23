@@ -6,12 +6,15 @@ import io.aatricks.easyreader.data.model.SourceBook
 import io.aatricks.easyreader.data.model.SourceChapter
 import io.aatricks.easyreader.data.remote.wattpad.WattpadApiService
 import io.aatricks.easyreader.data.remote.wattpad.WattpadAuthInterceptor
-import io.aatricks.easyreader.data.remote.wattpad.WattpadPart
+import io.aatricks.easyreader.data.remote.wattpad.WattpadAuthRequest
 import io.aatricks.easyreader.data.remote.wattpad.WattpadStory
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 import javax.inject.Singleton
+
+private const val WATTPAD_PAGE_SIZE = 20
+private const val CHUNK_SIZE = 3000
 
 /**
  * Repository for Wattpad source integration.
@@ -72,7 +75,7 @@ class WattpadRepository @Inject constructor(
             val response = apiService.searchStories(
                 query = query,
                 limit = WATTPAD_PAGE_SIZE,
-                offset = (page - 1) * 20
+                offset = (page - 1) * WATTPAD_PAGE_SIZE
             )
             if (response.isSuccessful) {
                 response.body()?.stories?.map { it.toSourceBook() } ?: emptyList()
@@ -133,11 +136,7 @@ class WattpadRepository @Inject constructor(
                 val text = response.body()?.text
                 if (text != null) {
                     // Split long text into pages (~3000 chars each)
-                    listOf(text.chunked(3000).joinToString("
-
----
-
-"))
+                    listOf(text.chunked(CHUNK_SIZE).joinToString("\n\n---\n\n"))
                 } else emptyList()
             } else {
                 Log.w(tag, "Chapter text failed: ${response.code()}")

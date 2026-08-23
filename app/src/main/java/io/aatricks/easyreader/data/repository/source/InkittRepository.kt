@@ -2,10 +2,11 @@ package io.aatricks.easyreader.data.repository.source
 
 import android.util.Log
 import io.aatricks.easyreader.config.AppConfig
-import io.aatricks.easyreader.data.model.SourceBook
+import io.aatricks.easyreader.data.model.ExploreItem
 import io.aatricks.easyreader.data.model.SourceChapter
 import io.aatricks.easyreader.data.remote.inkitt.InkittApiService
 import io.aatricks.easyreader.data.remote.inkitt.InkittAuthInterceptor
+import io.aatricks.easyreader.data.remote.inkitt.InkittAuthRequest
 import io.aatricks.easyreader.data.remote.inkitt.InkittStory
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -88,7 +89,10 @@ class InkittRepository @Inject constructor(
     // BROWSE
     // =========================================================================
 
-    override suspend fun getPopularNovels(page: Int, tags: List<String>): List<ExploreItem> = withContext(Dispatchers.IO) {
+    override suspend fun getPopularNovels(
+        page: Int,
+        tags: List<String>,
+    ): List<ExploreItem> = withContext(Dispatchers.IO) {
         if (!isEnabled) return@withContext emptyList()
         try {
             val response = apiService.getPopular(page)
@@ -103,7 +107,11 @@ class InkittRepository @Inject constructor(
         }
     }
 
-    override suspend fun getNovels(mode: BrowseMode, page: Int, tags: List<String>): List<ExploreItem> = withContext(Dispatchers.IO) {
+    override suspend fun getNovels(
+        mode: BrowseMode,
+        page: Int,
+        tags: List<String>,
+    ): List<ExploreItem> = withContext(Dispatchers.IO) {
         if (!isEnabled) return@withContext emptyList()
         try {
             val response = when (mode) {
@@ -190,19 +198,4 @@ class InkittRepository @Inject constructor(
             ?: throw IllegalArgumentException("Invalid Inkitt chapter URL: $url")
     }
 
-    private fun InkittStory.toExploreItem(): ExploreItem {
-        return ExploreItem(
-            id = id.toString(),
-            title = title,
-            url = "https://www.inkitt.com/story/$id",
-            coverUrl = cover,
-            author = author?.displayName ?: author?.username ?: "Unknown",
-            description = description ?: "",
-            status = if (completed) "Completed" else "Ongoing",
-            genres = tags ?: emptyList(),
-            rating = null,
-            totalChapters = chapterCount,
-            sourceName = name,
-        )
-    }
 }

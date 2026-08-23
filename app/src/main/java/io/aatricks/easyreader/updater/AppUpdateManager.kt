@@ -97,23 +97,29 @@ internal object UpdateEligibility {
 
 @Singleton
 class AppUpdateManager @Inject constructor(
-    @ApplicationContext private val context: Context
+    @ApplicationContext private val context: Context,
+    private val appConfig: AppConfig,
 ) {
     private companion object {
         private const val TIMEOUT_SECONDS = 30L
         private const val BUFFER_SIZE = 8192
-        private val GITHUB_API_URL get() = "https://api.github.com/repos/${appConfig.githubRepoOwner}/${appConfig.githubRepoName}/releases/latest"
-        private val GITHUB_COMPARE_API_URL get() = "https://api.github.com/repos/${appConfig.githubRepoOwner}/${appConfig.githubRepoName}/compare"
         private const val GITHUB_API_ACCEPT_HEADER = "application/vnd.github.v3+json"
         private val COMMIT_SHA_REGEX = Regex("[0-9a-fA-F]{40}")
-        
+
         // Flavor names
         private const val FLAVOR_AI = "ai"
         private const val FLAVOR_STANDARD = "standard"
-        
+
         // AI engine class name for flavor detection
         private const val AI_ENGINE_CLASS = "io.aatricks.easyreader.data.repository.summary.LlmEdgeSummaryEngine"
     }
+
+    private val githubApiUrl: String
+        get() = "https://api.github.com/repos/${appConfig.githubRepoOwner}/" +
+            "${appConfig.githubRepoName}/releases/latest"
+    private val githubCompareApiUrl: String
+        get() = "https://api.github.com/repos/${appConfig.githubRepoOwner}/" +
+            "${appConfig.githubRepoName}/compare"
 
     private val json = Json { ignoreUnknownKeys = true }
 
@@ -126,7 +132,7 @@ class AppUpdateManager @Inject constructor(
 
     suspend fun checkForUpdates(): UpdateCheckResult = withContext(Dispatchers.IO) {
         val request = Request.Builder()
-            .url(GITHUB_API_URL)
+            .url(githubApiUrl)
             .header("Accept", GITHUB_API_ACCEPT_HEADER)
             .build()
 
@@ -172,7 +178,7 @@ class AppUpdateManager @Inject constructor(
         val commitSha = BuildConfig.GIT_COMMIT_SHA
         if (!COMMIT_SHA_REGEX.matches(commitSha)) return null
         val request = Request.Builder()
-            .url("$GITHUB_COMPARE_API_URL/$tagName...$commitSha")
+            .url("$githubCompareApiUrl/$tagName...$commitSha")
             .header("Accept", GITHUB_API_ACCEPT_HEADER)
             .build()
 

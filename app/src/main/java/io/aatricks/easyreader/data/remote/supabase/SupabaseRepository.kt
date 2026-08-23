@@ -72,7 +72,13 @@ class SupabaseRepository @Inject constructor(
         @SerialName("updated_at") val updatedAt: String? = null,
     )
 
-    suspend fun saveProgress(platform: String, storyId: String, chapter: Int, page: Int, title: String? = null): Result<Unit> = withContext(Dispatchers.IO) {
+    suspend fun saveProgress(
+        platform: String,
+        storyId: String,
+        chapter: Int,
+        page: Int,
+        title: String? = null,
+    ): Result<Unit> = withContext(Dispatchers.IO) {
         if (!isAvailable) return@withContext Result.failure(Exception("Supabase not configured"))
         val user = currentUser() ?: return@withContext Result.failure(Exception("Not authenticated"))
         try {
@@ -92,7 +98,10 @@ class SupabaseRepository @Inject constructor(
         }
     }
 
-    suspend fun loadProgress(platform: String, storyId: String): Result<Pair<Int, Int>> = withContext(Dispatchers.IO) {
+    suspend fun loadProgress(
+        platform: String,
+        storyId: String,
+    ): Result<Pair<Int, Int>> = withContext(Dispatchers.IO) {
         if (!isAvailable) return@withContext Result.failure(Exception("Supabase not configured"))
         val user = currentUser() ?: return@withContext Result.failure(Exception("Not authenticated"))
         try {
@@ -141,14 +150,20 @@ class SupabaseRepository @Inject constructor(
         @SerialName("platform_user_id") val platformUserId: String? = null,
     )
 
-    suspend fun saveCredentials(platform: String, username: String, password: String, platformUserId: String? = null): Result<Unit> = withContext(Dispatchers.IO) {
+    suspend fun saveCredentials(
+        platform: String,
+        username: String,
+        password: String,
+        platformUserId: String? = null,
+    ): Result<Unit> = withContext(Dispatchers.IO) {
         if (!isAvailable) return@withContext Result.failure(Exception("Supabase not configured"))
         val user = currentUser() ?: return@withContext Result.failure(Exception("Not authenticated"))
         try {
             val row = PlatformCredentialRow(
                 userId = user.id,
                 platform = platform,
-                encryptedUsername = username, // NOTE: encrypt with Android Keystore before storing
+                // NOTE: not yet encrypted with Android Keystore before storing.
+                encryptedUsername = username,
                 encryptedPassword = password,
                 platformUserId = platformUserId,
             )
@@ -160,7 +175,9 @@ class SupabaseRepository @Inject constructor(
         }
     }
 
-    suspend fun getCredentials(platform: String): Result<PlatformCredentialRow?> = withContext(Dispatchers.IO) {
+    suspend fun getCredentials(
+        platform: String,
+    ): Result<PlatformCredentialRow?> = withContext(Dispatchers.IO) {
         if (!isAvailable) return@withContext Result.failure(Exception("Supabase not configured"))
         val user = currentUser() ?: return@withContext Result.failure(Exception("Not authenticated"))
         try {
@@ -187,7 +204,11 @@ class SupabaseRepository @Inject constructor(
         val metadata: String, // JSON string
     )
 
-    suspend fun cacheStoryMetadata(platform: String, storyId: String, metadataJson: String): Result<Unit> = withContext(Dispatchers.IO) {
+    suspend fun cacheStoryMetadata(
+        platform: String,
+        storyId: String,
+        metadataJson: String,
+    ): Result<Unit> = withContext(Dispatchers.IO) {
         if (!isAvailable) return@withContext Result.failure(Exception("Supabase not configured"))
         try {
             val row = StoryCacheRow(platform, storyId, metadataJson)
@@ -199,7 +220,10 @@ class SupabaseRepository @Inject constructor(
         }
     }
 
-    suspend fun getCachedStory(platform: String, storyId: String): Result<StoryCacheRow?> = withContext(Dispatchers.IO) {
+    suspend fun getCachedStory(
+        platform: String,
+        storyId: String,
+    ): Result<StoryCacheRow?> = withContext(Dispatchers.IO) {
         if (!isAvailable) return@withContext Result.failure(Exception("Supabase not configured"))
         try {
             val result = client?.from("story_cache")

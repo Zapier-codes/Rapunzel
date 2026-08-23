@@ -39,8 +39,8 @@ class EpubExporter @Inject constructor(
         outputFile: File,
     ): Result<ExportResult> = withContext(Dispatchers.IO) {
         try {
-            val book = database.bookDao().getBookById(bookId) ?: return@withContext
-        Result.failure(Exception("Book not found"))
+            val book = database.bookDao().getBookById(bookId)
+                ?: return@withContext Result.failure(Exception("Book not found"))
             val chapters = if (chapterIds != null) {
                 database.chapterDao().getChaptersForBook(bookId).filter { it.id in chapterIds }
             } else {
@@ -61,33 +61,50 @@ class EpubExporter @Inject constructor(
 
     private fun writeEpub(output: File, title: String, author: String?, chapters: List<ChapterEntity>) {
         ZipOutputStream(FileOutputStream(output)).use { zos ->
-            // mimetype must be first and uncompressed
-            zos.putNextEntry(ZipEntry("mimetype").apply { method = ZipEntry.STORED })
-            zos.write("application/epub+zip".toByteArray())
-            zos.closeEntry()
+            writeMimetype(zos)
+            writeContainerXml(zos)
+            writeContentOpf(zos, title, author, chapters)
+            writeTocNcx(zos, title, chapters)
+            writeChapterFiles(zos, chapters)
+        }
+    }
 
-            // META-INF/container.xml
-            zos.putNextEntry(ZipEntry("META-INF/container.xml"))
-            zos.write("""<?xml version="1.0"?>
+    private fun writeMimetype(zos: ZipOutputStream) {
+        // mimetype must be first and uncompressed
+        zos.putNextEntry(ZipEntry("mimetype").apply { method = ZipEntry.STORED })
+        zos.write("application/epub+zip".toByteArray())
+        zos.closeEntry()
+    }
+
+    private fun writeContainerXml(zos: ZipOutputStream) {
+        zos.putNextEntry(ZipEntry("META-INF/container.xml"))
+        zos.write(
+            """<?xml version="1.0"?>
 <container version="1.0" xmlns="urn:oasis:names:tc:opendocument:xmlns:container">
     <rootfiles>
         <rootfile full-path="OEBPS/content.opf" media-type="application/oebps-package+xml"/>
     </rootfiles>
-</container>""".trimIndent().toByteArray())
-            zos.closeEntry()
+</container>""".trimIndent().toByteArray()
+        )
+        zos.closeEntry()
+    }
 
-            // OEBPS/content.opf
-            val chapterItems = chapters.mapIndexed { i, ch ->
-                """<item id="ch${ch.id}" href="chapter${i+1}.xhtml" media-type="application/xhtml+xml"/>"""
-            }.joinToString("
-        ")
-            val spineItems = chapters.mapIndexed { i, ch ->
-                """<itemref idref="ch${ch.id}"/>"""
-            }.joinToString("
-        ")
+    private fun writeContentOpf(
+        zos: ZipOutputStream,
+        title: String,
+        author: String?,
+        chapters: List<ChapterEntity>,
+    ) {
+        val chapterItems = chapters.mapIndexed { i, ch ->
+            """<item id="ch${ch.id}" href="chapter${i + 1}.xhtml" media-type="application/xhtml+xml"/>"""
+        }.joinToString("\n        ")
+        val spineItems = chapters.mapIndexed { i, ch ->
+            """<itemref idref="ch${ch.id}"/>"""
+        }.joinToString("\n        ")
 
-            zos.putNextEntry(ZipEntry("OEBPS/content.opf"))
-            zos.write("""<?xml version="1.0" encoding="UTF-8"?>
+        zos.putNextEntry(ZipEntry("OEBPS/content.opf"))
+        zos.write(
+            """<?xml version="1.0" encoding="UTF-8"?>
 <package version="3.0" xmlns="http://www.idpf.org/2007/opf">
     <metadata xmlns:dc="http://purl.org/dc/elements/1.1/">
         <dc:title>$title</dc:title>
@@ -102,20 +119,22 @@ class EpubExporter @Inject constructor(
     <spine toc="toc">
         $spineItems
     </spine>
-</package>""".toByteArray())
-            zos.closeEntry()
+</package>""".toByteArray()
+        )
+        zos.closeEntry()
+    }
 
-            // OEBPS/toc.ncx
-            val navPoints = chapters.mapIndexed { i, ch ->
-                """<navPoint id="navPoint-${i+1}" playOrder="${i+1}">
-            <navLabel><text>${escapeXml(ch.title ?: "Chapter ${i+1}")}</text></navLabel>
-            <content src="chapter${i+1}.xhtml"/>
+    private fun writeTocNcx(zos: ZipOutputStream, title: String, chapters: List<ChapterEntity>) {
+        val navPoints = chapters.mapIndexed { i, ch ->
+            """<navPoint id="navPoint-${i + 1}" playOrder="${i + 1}">
+            <navLabel><text>${escapeXml(ch.title ?: "Chapter ${i + 1}")}</text></navLabel>
+            <content src="chapter${i + 1}.xhtml"/>
         </navPoint>"""
-            }.joinToString("
-        ")
+        }.joinToString("\n        ")
 
-            zos.putNextEntry(ZipEntry("OEBPS/toc.ncx"))
-            zos.write("""<?xml version="1.0" encoding="UTF-8"?>
+        zos.putNextEntry(ZipEntry("OEBPS/toc.ncx"))
+        zos.write(
+            """<?xml version="1.0" encoding="UTF-8"?>
 <ncx version="2005-1" xmlns="http://www.daisy.org/z3986/2005/ncx/">
     <head>
         <meta name="dtb:uid" content="urn:uuid:${java.util.UUID.randomUUID()}"/>
@@ -127,29 +146,30 @@ class EpubExporter @Inject constructor(
     <navMap>
         $navPoints
     </navMap>
-</ncx>""".toByteArray())
-            zos.closeEntry()
+</ncx>""".toByteArray()
+        )
+        zos.closeEntry()
+    }
 
-            // Chapter XHTML files
-            chapters.forEachIndexed { i, ch ->
-                val html = """<?xml version="1.0" encoding="UTF-8"?>
+    private fun writeChapterFiles(zos: ZipOutputStream, chapters: List<ChapterEntity>) {
+        chapters.forEachIndexed { i, ch ->
+            val chapterTitle = ch.title ?: "Chapter ${i + 1}"
+            val body = ch.content?.let { escapeXml(it).replace("\n", "</p>\n<p>") } ?: ""
+            val html = """<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-    <title>${escapeXml(ch.title ?: "Chapter ${i+1}")}</title>
+    <title>${escapeXml(chapterTitle)}</title>
     <meta charset="UTF-8"/>
 </head>
 <body>
-    <h1>${escapeXml(ch.title ?: "Chapter ${i+1}")}</h1>
-    ${ch.content?.let { escapeXml(it).replace("
-", "</p>
-<p>") } ?: ""}
+    <h1>${escapeXml(chapterTitle)}</h1>
+    $body
 </body>
 </html>"""
-                zos.putNextEntry(ZipEntry("OEBPS/chapter${i+1}.xhtml"))
-                zos.write(html.toByteArray(Charsets.UTF_8))
-                zos.closeEntry()
-            }
+            zos.putNextEntry(ZipEntry("OEBPS/chapter${i + 1}.xhtml"))
+            zos.write(html.toByteArray(Charsets.UTF_8))
+            zos.closeEntry()
         }
     }
 
@@ -158,7 +178,7 @@ class EpubExporter @Inject constructor(
             .replace("&", "&amp;")
             .replace("<", "&lt;")
             .replace(">", "&gt;")
-            .replace(""", "&quot;")
+            .replace("\"", "&quot;")
             .replace("'", "&apos;")
     }
 }

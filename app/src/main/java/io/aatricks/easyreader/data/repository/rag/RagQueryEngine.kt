@@ -7,6 +7,11 @@ import kotlinx.coroutines.withContext
 import javax.inject.Inject
 import javax.inject.Singleton
 
+private const val EXCERPT_LENGTH = 300
+private const val FALLBACK_PASSAGE_COUNT = 3
+private const val FALLBACK_SNIPPET_LENGTH = 200
+private const val RETRIEVAL_K = 5
+
 /**
  * Query engine that formats RAG-retrieved context + user question into a prompt
  * and calls the local LLM (llmedge) for generative answers.
@@ -39,18 +44,17 @@ class RagQueryEngine @Inject constructor(
             )
         }
 
-        val passages = retriever.retrieve(question, k = 5, bookId = bookId)
+        val passages = retriever.retrieve(question, k = RETRIEVAL_K, bookId = bookId)
         if (passages.isEmpty()) {
             return@withContext AiAnswer(
-                answer = "I couldn't find any relevant passages to answer your question. Try rephrasing or make sure the book is indexed.",
+                answer = "I couldn't find any relevant passages to answer your question. " +
+                    "Try rephrasing or make sure the book is indexed.",
                 sources = emptyList(),
                 confidence = 0.0,
             )
         }
 
-        val context = passages.joinToString("
-
-") { "[Excerpt] ${it.snippet.take(300)}..." }
+        val context = passages.joinToString("\n\n") { "[Excerpt] ${it.snippet.take(EXCERPT_LENGTH)}..." }
         val prompt = buildPrompt(context, question)
 
         // Try generative LLM first
@@ -64,23 +68,20 @@ class RagQueryEngine @Inject constructor(
         }
 
         // Fallback: extractive summary
-        val fallback = passages.take(3).joinToString("
-
-") {
-            "• ${it.snippet.take(200)}..."
+        val fallback = passages.take(FALLBACK_PASSAGE_COUNT).joinToString("\n\n") {
+            "• ${it.snippet.take(FALLBACK_SNIPPET_LENGTH)}..."
         }
 
         AiAnswer(
-            answer = "Based on the text:
-
-$fallback",
+            answer = "Based on the text:\n\n$fallback",
             sources = passages,
             confidence = passages.firstOrNull()?.score ?: 0.0,
         )
     }
 
     private fun buildPrompt(context: String, question: String): String {
-        return """You are a helpful reading assistant. Use ONLY the provided excerpts from the book to answer the user's question. If the answer is not in the excerpts, say so honestly.
+        return """You are a helpful reading assistant. Use ONLY the provided excerpts from
+the book to answer the user's question. If the answer is not in the excerpts, say so honestly.
 
 EXCERPTS:
 $context

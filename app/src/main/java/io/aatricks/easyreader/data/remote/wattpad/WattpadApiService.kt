@@ -1,9 +1,16 @@
 package io.aatricks.easyreader.data.remote.wattpad
 
 import retrofit2.Response
+import retrofit2.http.Body
 import retrofit2.http.GET
+import retrofit2.http.POST
 import retrofit2.http.Path
 import retrofit2.http.Query
+
+private const val STORY_FIELDS = "id,title,description,cover,author,parts,tags,language," +
+    "mature,completed,numParts,readCount,voteCount,commentCount,createDate,modifyDate"
+private const val SEARCH_FIELDS = "id,title,description,cover,author,tags,language,mature," +
+    "completed,numParts,readCount,voteCount,commentCount"
 
 /**
  * Wattpad undocumented REST API (v3/apiv2).
@@ -14,7 +21,7 @@ interface WattpadApiService {
     @GET("api/v3/stories/{story_id}")
     suspend fun getStory(
         @Path("story_id") storyId: Long,
-        @Query("fields") fields: String = "id,title,description,cover,author,parts,tags,language,mature,completed,numParts,readCount,voteCount,commentCount,createDate,modifyDate"
+        @Query("fields") fields: String = STORY_FIELDS
     ): Response<WattpadStory>
 
     @GET("api/v3/parts/{part_id}")
@@ -33,7 +40,7 @@ interface WattpadApiService {
         @Query("query") query: String,
         @Query("limit") limit: Int = 20,
         @Query("offset") offset: Int = 0,
-        @Query("fields") fields: String = "id,title,description,cover,author,tags,language,mature,completed,numParts,readCount,voteCount,commentCount",
+        @Query("fields") fields: String = SEARCH_FIELDS,
     ): Response<WattpadSearchResult>
 
     @GET("api/v3/users/{username}")

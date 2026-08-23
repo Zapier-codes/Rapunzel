@@ -32,7 +32,11 @@ class RagRetriever @Inject constructor(
      * @param k Number of passages to return (default 5)
      * @param bookId Optional: restrict search to a single book
      */
-    suspend fun retrieve(query: String, k: Int = 5, bookId: String? = null): List<RetrievedPassage> = withContext(Dispatchers.Default) {
+    suspend fun retrieve(
+        query: String,
+        k: Int = 5,
+        bookId: String? = null,
+    ): List<RetrievedPassage> = withContext(Dispatchers.Default) {
         if (!appConfig.isAiRagEnabled) {
             Log.d(tag, "RAG disabled")
             return@withContext emptyList()

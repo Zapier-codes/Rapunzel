@@ -12,6 +12,8 @@ import javax.inject.Singleton
 import kotlin.math.ln
 import kotlin.math.sqrt
 
+private const val SNIPPET_LENGTH = 200
+
 /**
  * Builds and maintains an inverted TF-IDF index over book chapters.
  * Fully local — no network calls, no model weights.
@@ -83,7 +85,7 @@ class RagIndexManager @Inject constructor(
                 chapterId = chapter.id,
                 bookId = bookId,
                 score = normalizedTf,
-                snippet = chapter.content!!.take(200)
+                snippet = chapter.content!!.take(SNIPPET_LENGTH)
             ))
             docFreq.merge(token, 1, Int::plus)
         }
@@ -99,8 +101,7 @@ class RagIndexManager @Inject constructor(
 
     /** Compute TF-IDF score for a token in a specific document. */
     fun tfidf(token: String, chapterId: Long): Double {
-        val postings = invertedIndex[token] ?: return 0.0
-        val posting = postings.find { it.chapterId == chapterId } ?: return 0.0
+        val posting = invertedIndex[token]?.find { it.chapterId == chapterId } ?: return 0.0
         val df = docFreq[token] ?: 1
         val idf = ln((totalDocs + 1.0) / (df + 1.0)) + 1.0
         return posting.score * idf
